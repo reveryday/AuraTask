@@ -9,10 +9,12 @@ import InboxView from "./components/InboxView";
 import HabitsView from "./components/HabitsView";
 import MindmapsView from "./components/MindmapsView";
 import ThemeToggle from "./components/ThemeToggle";
+import LangToggle from "./components/LangToggle";
 import BackupActions from "./components/BackupActions";
 import WindowControls from "./components/WindowControls";
 import TopbarChips from "./components/TopbarChips";
 import { useFocusTimer } from "./hooks/useFocusTimer";
+import { useT } from "./i18n";
 import {
   createTask,
   deleteTask,
@@ -52,8 +54,8 @@ function rangeFor(view: ViewMode, anchor: Date): [string, string] {
   ];
 }
 
-function headerLabel(view: ViewMode, anchor: Date): string {
-  if (view === "month") return formatMonth(anchor);
+function headerLabel(view: ViewMode, anchor: Date, lang: "zh" | "en" = "zh"): string {
+  if (view === "month") return formatMonth(anchor, lang);
   if (view === "week") {
     const s = startOfWeek(anchor);
     const e = addDays(s, 6);
@@ -63,6 +65,7 @@ function headerLabel(view: ViewMode, anchor: Date): string {
 }
 
 export default function App() {
+  const { t, lang } = useT();
   const [view, setView] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("auratask.lastCalendarView");
     return saved === "week" || saved === "month" ? (saved as ViewMode) : "day";
@@ -197,7 +200,13 @@ export default function App() {
       .then((rows) => {
         const pending = rows.filter((t) => !t.completed_at).length;
         if (pending > 0) {
-          notify("今日待办", `今天还有 ${pending} 项任务等你处理。`);
+          notify(
+            t("今日待办", "Today's tasks"),
+            t(
+              `今天还有 ${pending} 项任务等你处理。`,
+              `You have ${pending} task${pending === 1 ? "" : "s"} on the docket today.`,
+            ),
+          );
         }
       })
       .catch(() => {});
@@ -249,8 +258,8 @@ export default function App() {
           <button
             className="icon-btn sidebar-toggle"
             onClick={toggleSidebar}
-            aria-label="隐藏侧边栏"
-            title="隐藏侧边栏"
+            aria-label={t("隐藏侧边栏", "Hide sidebar")}
+            title={t("隐藏侧边栏", "Hide sidebar")}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path
@@ -268,45 +277,46 @@ export default function App() {
           onClick={() => setView(lastCalendarView)}
         >
           <span>📅</span>
-          <span>日历</span>
+          <span>{t("日历", "Calendar")}</span>
         </button>
         <button
           className={`nav-item ${view === "inbox" ? "active" : ""}`}
           onClick={() => setView("inbox")}
         >
           <span>📥</span>
-          <span>稍后</span>
+          <span>{t("稍后", "Later")}</span>
         </button>
         <button
           className={`nav-item ${view === "habits" ? "active" : ""}`}
           onClick={() => setView("habits")}
         >
           <span>💪</span>
-          <span>习惯</span>
+          <span>{t("习惯", "Habits")}</span>
         </button>
         <button
           className={`nav-item ${view === "mindmaps" ? "active" : ""}`}
           onClick={() => setView("mindmaps")}
         >
           <span>🧠</span>
-          <span>思维导图</span>
+          <span>{t("思维导图", "Mindmaps")}</span>
         </button>
         <button
           className={`nav-item ${view === "focus" ? "active" : ""}`}
           onClick={() => setView("focus")}
         >
           <span>🍅</span>
-          <span>专注计时</span>
+          <span>{t("专注计时", "Focus")}</span>
         </button>
         <button
           className={`nav-item ${view === "stats" ? "active" : ""}`}
           onClick={() => setView("stats")}
         >
           <span>📊</span>
-          <span>学习统计</span>
+          <span>{t("学习统计", "Statistics")}</span>
         </button>
         <div style={{ marginTop: "auto" }} />
         <BackupActions onChanged={refresh} />
+        <LangToggle />
         <ThemeToggle />
       </aside>
 
@@ -316,8 +326,8 @@ export default function App() {
             <button
               className="icon-btn"
               onClick={toggleSidebar}
-              aria-label="显示侧边栏"
-              title="显示侧边栏"
+              aria-label={t("显示侧边栏", "Show sidebar")}
+              title={t("显示侧边栏", "Show sidebar")}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path
@@ -331,35 +341,39 @@ export default function App() {
           )}
           {view === "focus" ? (
             <>
-              <h1>🍅 专注计时</h1>
+              <h1>🍅 {t("专注计时", "Focus")}</h1>
               <div className="topbar-spacer" />
             </>
           ) : view === "stats" ? (
             <>
-              <h1>📊 学习统计</h1>
+              <h1>📊 {t("学习统计", "Statistics")}</h1>
               <div className="topbar-spacer" />
             </>
           ) : view === "inbox" ? (
             <>
-              <h1>📥 稍后</h1>
+              <h1>📥 {t("稍后", "Later")}</h1>
               <div className="topbar-spacer" />
               <button className="primary-btn" onClick={() => setShowAdd(true)}>
-                + 新建任务
+                + {t("新建任务", "New task")}
               </button>
             </>
           ) : view === "habits" ? (
             <>
-              <h1>💪 习惯养成</h1>
+              <h1>💪 {t("习惯养成", "Habits")}</h1>
               <div className="topbar-spacer" />
             </>
           ) : view === "mindmaps" ? (
             <>
-              <h1>🧠 思维导图</h1>
+              <h1>🧠 {t("思维导图", "Mindmaps")}</h1>
               <div className="topbar-spacer" />
             </>
           ) : (
             <>
-              <button className="icon-btn" onClick={() => navigate(-1)} aria-label="上一个">
+              <button
+                className="icon-btn"
+                onClick={() => navigate(-1)}
+                aria-label={t("上一个", "Previous")}
+              >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M10 3l-5 5 5 5"
@@ -370,8 +384,12 @@ export default function App() {
                   />
                 </svg>
               </button>
-              <h1>{headerLabel(view, anchor)}</h1>
-              <button className="icon-btn" onClick={() => navigate(1)} aria-label="下一个">
+              <h1>{headerLabel(view, anchor, lang)}</h1>
+              <button
+                className="icon-btn"
+                onClick={() => navigate(1)}
+                aria-label={t("下一个", "Next")}
+              >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M6 3l5 5-5 5"
@@ -383,27 +401,27 @@ export default function App() {
                 </svg>
               </button>
               <button className="today-btn" onClick={() => setAnchor(new Date())}>
-                今天
+                {t("今天", "Today")}
               </button>
 
               <div className="topbar-spacer" />
 
               <div className="segmented">
                 <button className={view === "day" ? "active" : ""} onClick={() => setView("day")}>
-                  日
+                  {t("日", "Day")}
                 </button>
                 <button className={view === "week" ? "active" : ""} onClick={() => setView("week")}>
-                  周
+                  {t("周", "Week")}
                 </button>
                 <button
                   className={view === "month" ? "active" : ""}
                   onClick={() => setView("month")}
                 >
-                  月
+                  {t("月", "Month")}
                 </button>
               </div>
               <button className="primary-btn" onClick={() => setShowAdd(true)}>
-                + 新建任务
+                + {t("新建任务", "New task")}
               </button>
             </>
           )}

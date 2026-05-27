@@ -2,49 +2,26 @@
 
 **English** · [简体中文](./README.zh-CN.md)
 
-> A minimalist Windows desktop task manager tuned to a graduate-student rhythm — local-first, no accounts, no cloud, no telemetry.
+[![Latest release](https://img.shields.io/github/v/release/reveryday/AuraTask?label=download&color=4f46e5&style=flat-square)](https://github.com/reveryday/AuraTask/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/reveryday/AuraTask/total?style=flat-square)](https://github.com/reveryday/AuraTask/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue?style=flat-square)](#install-end-user)
 
-AuraTask folds the handful of things you actually do during research — planning tasks, focusing in short bursts, sticking to habits, mapping out ideas, and tracking how you feel — into a single lightweight native app. Everything lives in a local SQLite file. Close it and it forgets you exist.
+AuraTask folds the handful of things a graduate student actually does every day — planning tasks, focusing in short bursts, building habits, mapping out ideas, tracking how you feel — into a single lightweight native app. Everything lives in a local SQLite file. No accounts, no cloud, no telemetry. Close it and it forgets you exist.
 
 ## Features
 
-### Tasks
-- **Day / week / month** views, switchable at any granularity (a single sidebar entry remembers the last one used)
-- **Later inbox** for tasks you don't want to schedule yet
-- Mark tasks as **primary** or **secondary** ("延伸") rather than 1-5 priority levels
-- Free-form **tags** (no rigid "subject" model — fits research workflows: 论文 / 组会 / reading)
-- Week view bands each day into **morning / afternoon / evening** color blocks
+- **Day / week / month** views at any granularity, tasks tagged as **primary** or **secondary** ("延伸"), week view banded by **morning / afternoon / evening** color blocks;
+- **Later inbox** — a parking spot for undated tasks until you have time;
 
-### Focus timer
-- Pomodoro with **custom focus / break durations** (25/5, 50/10, 90/20 presets included)
-- Optionally bind the session to a task ("I'm focusing on…")
-- Sessions are logged automatically and a Windows notification fires at the end
-- **Runs in the background** — switching to another view keeps the timer ticking
+- Pomodoro timer with **custom focus / break lengths** (25/5, 50/10, 90/20 presets), can be bound to a task ("I'm focusing on…"), end-of-session is logged automatically and pops a Windows notification;
 
-### Habits
-- Two kinds: **binary** ("did I do it?") and **quantitative** ("study 7 h/day", counts as done only when the target is met)
-- Each card shows **current streak**, **30-day completion rate**, and a **mini heatmap**
-- Archive / restore / delete
+- **Binary habits** ("did I do it?") and **quantitative habits** (e.g. study 7h/day — only counts when the target is hit), each card shows **current streak**, **30-day completion rate**, and a **mini heatmap**;
+- **Left-to-right mindmaps**, multiple named maps, nodes can **link to a task** and reflect its completion state;
 
-### Mindmaps
-- **Left-to-right tree layout**, multiple named maps
-- Nodes can **link to a task** and reflect its completion state
-- Fully keyboard-driven: `Tab` child, `Enter` sibling, `F2` rename, `Del` delete
+- One-tap daily **mood emoji** (😄🙂😐😕😭), visible as small badges on the week/month grid;
+- A **statistics** page rolls up weekly/monthly focus minutes, completion rate, active days, mood trend, habit streaks, and tag-time breakdown;
 
-### Mood & review
-- One-tap daily mood emoji (😄🙂😐😕😭); shown as small badges on the week/month grid
-- A **statistics** page rolls up focus minutes, completion rate, active days, mood trend, habit streaks, and tag breakdown for the current week or month
-
-### Desktop polish
-- **Frameless custom title bar** with a single draggable region and minimal window controls
-- **Topbar chips**: `⏳ 3 tasks left · 67%` and a pulsing `🍅 14:23` while a pomodoro is running
-- **Desktop notifications**: end-of-pomodoro alerts plus a once-a-day "you still have N tasks" summary
-- **Window size and position remembered** across launches
-- **Dark mode**, follows system on first launch, manual toggle anytime
-- **Sidebar collapsible**
-
-### Data
-- **One-click JSON backup / restore** (drop the backup in OneDrive / Dropbox to survive reinstalls)
+- **One-click JSON backup / restore** (export to OneDrive/Dropbox — survive Windows reinstalls)
 - Local SQLite, schema managed via migration versions
 
 ## Keyboard shortcuts
@@ -83,7 +60,9 @@ Data is stored at `%APPDATA%\com.auratask.app\auratask.db`.
 
 ## Install (end user)
 
-Grab the latest installer from the [Releases](https://github.com/reveryday/AuraTask/releases) page and run it. Windows 10 / 11 are supported. The build is unsigned, so SmartScreen may warn you the first time — click *More info → Run anyway*.
+**👉 [Download the latest installer](https://github.com/reveryday/AuraTask/releases/latest)** (Windows 10 / 11 `.msi` or `.exe`).
+
+The build is unsigned, so SmartScreen may warn you the first time — click *More info → Run anyway*. After installation your data lives at `%APPDATA%\com.auratask.app\auratask.db` and you can back it up from the sidebar at any time.
 
 ## Develop
 
@@ -142,6 +121,7 @@ src/
 │   └── ...
 ├── hooks/
 │   └── useFocusTimer.ts     # Pomodoro state lifted to App scope, survives view switches
+├── i18n/                    # Language toggle (zh / en)
 ├── utils/                   # Pure functions: dates, tree layout, backup, notifications
 └── styles/global.css        # Global CSS variables driving light + dark themes
 

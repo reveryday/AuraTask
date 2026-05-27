@@ -1,4 +1,5 @@
 import type { FocusTimer } from "../hooks/useFocusTimer";
+import { useT } from "../i18n";
 
 interface Props {
   todayPending: number;
@@ -15,6 +16,7 @@ export default function TopbarChips({
   onJumpDay,
   onJumpFocus,
 }: Props) {
+  const { t } = useT();
   const total = todayPending + todayDone;
   const pct = total === 0 ? 0 : Math.round((todayDone / total) * 100);
 
@@ -27,7 +29,7 @@ export default function TopbarChips({
         <button
           className={`chip chip-focus ${timer.kind === "break" ? "is-break" : ""}`}
           onClick={onJumpFocus}
-          title="跳到专注计时"
+          title={t("跳到专注计时", "Jump to focus timer")}
         >
           <span>{timer.kind === "focus" ? "🍅" : "☕"}</span>
           <span className="chip-time">
@@ -36,14 +38,21 @@ export default function TopbarChips({
         </button>
       )}
       {total > 0 && (
-        <button className="chip chip-today" onClick={onJumpDay} title="跳到今日">
+        <button
+          className="chip chip-today"
+          onClick={onJumpDay}
+          title={t("跳到今日", "Jump to today")}
+        >
           <span>⏳</span>
           {todayPending > 0 ? (
             <span>
-              今日剩 {todayPending} 项 · {pct}%
+              {t(
+                `今日剩 ${todayPending} 项 · ${pct}%`,
+                `${todayPending} left today · ${pct}%`,
+              )}
             </span>
           ) : (
-            <span>今日已完成 ✨</span>
+            <span>{t("今日已完成 ✨", "All done today ✨")}</span>
           )}
         </button>
       )}

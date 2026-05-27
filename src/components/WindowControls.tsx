@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useT } from "../i18n";
 
 export default function WindowControls() {
+  const { t } = useT();
   const [maximized, setMaximized] = useState(false);
   const win = getCurrentWindow();
 
@@ -24,21 +26,21 @@ export default function WindowControls() {
     <div className="window-controls" data-tauri-drag-region={false}>
       <button
         className="winctrl winctrl-min"
-        title="最小化"
+        title={t("最小化", "Minimize")}
         onClick={() => win.minimize()}
-        aria-label="最小化"
+        aria-label={t("最小化", "Minimize")}
       />
       <button
         className="winctrl winctrl-max"
-        title={maximized ? "还原" : "最大化"}
+        title={maximized ? t("还原", "Restore") : t("最大化", "Maximize")}
         onClick={() => win.toggleMaximize()}
-        aria-label="最大化"
+        aria-label={t("最大化", "Maximize")}
       />
       <button
         className="winctrl winctrl-close"
-        title="关闭"
+        title={t("关闭", "Close")}
         onClick={() => win.close()}
-        aria-label="关闭"
+        aria-label={t("关闭", "Close")}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
 import type { FocusSession, Task } from "../types";
 import { toISODate } from "../utils/date";
 import type { FocusTimer } from "../hooks/useFocusTimer";
+import { useT } from "../i18n";
 
 interface Stats {
   sessions: number;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function FocusView({ timer }: Props) {
+  const { t } = useT();
   const {
     settings,
     kind,
@@ -33,6 +35,7 @@ export default function FocusView({ timer }: Props) {
     skipToEnd,
     saveSettings,
     setOnSessionRecorded,
+    setNotificationMessages,
   } = timer;
 
   const [showSettings, setShowSettings] = useState(false);
@@ -59,6 +62,23 @@ export default function FocusView({ timer }: Props) {
     return () => setOnSessionRecorded(undefined);
   }, [setOnSessionRecorded]);
 
+  useEffect(() => {
+    setNotificationMessages({
+      focusDone: {
+        title: t("专注完成 🍅", "Focus done 🍅"),
+        body: t(
+          `${settings.focusMin} 分钟到了，去休息一下吧。`,
+          `${settings.focusMin} minutes up. Time for a break.`,
+        ),
+      },
+      breakDone: {
+        title: t("休息结束 ☕", "Break over ☕"),
+        body: t("回来继续专注吧。", "Time to focus again."),
+      },
+    });
+    return () => setNotificationMessages(undefined);
+  }, [setNotificationMessages, settings.focusMin, t]);
+
   const progress = useMemo(() => 1 - remaining / totalSec, [remaining, totalSec]);
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
@@ -75,20 +95,20 @@ export default function FocusView({ timer }: Props) {
               className={kind === "focus" ? "active" : ""}
               onClick={() => switchKind("focus")}
             >
-              专注 · {settings.focusMin} 分钟
+              {t(`专注 · ${settings.focusMin} 分钟`, `Focus · ${settings.focusMin}m`)}
             </button>
             <button
               className={kind === "break" ? "active" : ""}
               onClick={() => switchKind("break")}
             >
-              休息 · {settings.breakMin} 分钟
+              {t(`休息 · ${settings.breakMin} 分钟`, `Break · ${settings.breakMin}m`)}
             </button>
           </div>
           <button
             className="icon-btn"
             onClick={() => setShowSettings((s) => !s)}
-            aria-label="时长设置"
-            title="自定义时长"
+            aria-label={t("时长设置", "Duration settings")}
+            title={t("自定义时长", "Customize durations")}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
@@ -105,7 +125,7 @@ export default function FocusView({ timer }: Props) {
         {showSettings && (
           <div className="focus-settings">
             <div className="field">
-              <label>专注时长（分钟）</label>
+              <label>{t("专注时长（分钟）", "Focus length (minutes)")}</label>
               <input
                 type="number"
                 min={1}
@@ -117,7 +137,7 @@ export default function FocusView({ timer }: Props) {
               />
             </div>
             <div className="field">
-              <label>休息时长（分钟）</label>
+              <label>{t("休息时长（分钟）", "Break length (minutes)")}</label>
               <input
                 type="number"
                 min={1}
@@ -129,7 +149,7 @@ export default function FocusView({ timer }: Props) {
               />
             </div>
             <div className="focus-settings-presets">
-              <span>预设：</span>
+              <span>{t("预设：", "Presets:")}</span>
               <button
                 type="button"
                 onClick={() => saveSettings({ focusMin: 25, breakMin: 5 })}
@@ -180,23 +200,27 @@ export default function FocusView({ timer }: Props) {
             <div className="time">
               {mm}:{ss}
             </div>
-            <div className="kind-label">{kind === "focus" ? "保持专注" : "短暂休息"}</div>
+            <div className="kind-label">
+              {kind === "focus"
+                ? t("保持专注", "Stay focused")
+                : t("短暂休息", "Short break")}
+            </div>
           </div>
         </div>
 
         {kind === "focus" && (
           <div className="task-picker">
-            <label>正在专注于</label>
+            <label>{t("正在专注于", "Focusing on")}</label>
             <select
               value={taskId}
               onChange={(e) => setTaskId(e.target.value ? Number(e.target.value) : "")}
               disabled={running}
             >
-              <option value="">— 自由专注 —</option>
-              {tasks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.subject ? `[${t.subject}] ` : ""}
-                  {t.title}
+              <option value="">{t("— 自由专注 —", "— free focus —")}</option>
+              {tasks.map((task) => (
+                <option key={task.id} value={task.id}>
+                  {task.subject ? `[${task.subject}] ` : ""}
+                  {task.title}
                 </option>
               ))}
             </select>
@@ -206,36 +230,42 @@ export default function FocusView({ timer }: Props) {
         <div className="focus-actions">
           {!running ? (
             <button className="primary-btn big" onClick={start}>
-              开始
+              {t("开始", "Start")}
             </button>
           ) : (
             <button className="primary-btn big" onClick={pause}>
-              暂停
+              {t("暂停", "Pause")}
             </button>
           )}
           <button className="ghost-btn big" onClick={reset}>
-            重置
+            {t("重置", "Reset")}
           </button>
-          <button className="ghost-btn big" onClick={skipToEnd} title="提前结束并记录">
-            跳过
+          <button
+            className="ghost-btn big"
+            onClick={skipToEnd}
+            title={t("提前结束并记录", "Finish early and log")}
+          >
+            {t("跳过", "Skip")}
           </button>
         </div>
       </div>
 
       <div className="focus-side">
         <div className="stat-card">
-          <div className="stat-label">今日专注</div>
+          <div className="stat-label">{t("今日专注", "Today's focus")}</div>
           <div className="stat-value">
             {stats.totalMinutes}
-            <span>分钟</span>
+            <span>{t("分钟", "min")}</span>
           </div>
-          <div className="stat-sub">{stats.sessions} 个番茄钟</div>
+          <div className="stat-sub">
+            {t(`${stats.sessions} 个番茄钟`, `${stats.sessions} pomodoro${stats.sessions === 1 ? "" : "s"}`)}
+          </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-label">最近会话</div>
+          <div className="stat-label">{t("最近会话", "Recent sessions")}</div>
           {recent.length === 0 ? (
-            <div className="empty-small">还没有专注记录</div>
+            <div className="empty-small">{t("还没有专注记录", "No focus sessions yet")}</div>
           ) : (
             <ul className="session-list">
               {recent.map((s) => (
@@ -247,7 +277,9 @@ export default function FocusView({ timer }: Props) {
                       minute: "2-digit",
                     })}
                   </span>
-                  <span className="dur">{Math.round(s.duration_sec / 60)} 分</span>
+                  <span className="dur">
+                    {t(`${Math.round(s.duration_sec / 60)} 分`, `${Math.round(s.duration_sec / 60)} min`)}
+                  </span>
                 </li>
               ))}
             </ul>

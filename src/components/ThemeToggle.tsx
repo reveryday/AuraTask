@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 
 type Theme = "light" | "dark";
 
@@ -11,6 +12,7 @@ function readInitial(): Theme {
 }
 
 export default function ThemeToggle() {
+  const { t } = useT();
   const [theme, setTheme] = useState<Theme>(() => readInitial());
 
   useEffect(() => {
@@ -24,10 +26,16 @@ export default function ThemeToggle() {
     <button
       className="theme-toggle"
       onClick={toggle}
-      title={theme === "dark" ? "切换到日间模式" : "切换到夜间模式"}
+      title={
+        theme === "dark"
+          ? t("切换到日间模式", "Switch to light mode")
+          : t("切换到夜间模式", "Switch to dark mode")
+      }
     >
       <span className="theme-toggle-icon">{theme === "dark" ? "☀️" : "🌙"}</span>
-      <span>{theme === "dark" ? "日间" : "夜间"}</span>
+      <span>
+        {theme === "dark" ? t("日间", "Light") : t("夜间", "Dark")}
+      </span>
     </button>
   );
 }

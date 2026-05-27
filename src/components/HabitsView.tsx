@@ -13,10 +13,12 @@ import type { Habit, HabitLog, NewHabit } from "../types";
 import { addDays, toISODate } from "../utils/date";
 import { completionRate, computeStreak, isCompleted } from "../utils/habits";
 import HabitDialog from "./HabitDialog";
+import { useT } from "../i18n";
 
 const HEATMAP_DAYS = 30;
 
 export default function HabitsView() {
+  const { t } = useT();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logsByHabit, setLogsByHabit] = useState<Map<number, HabitLog[]>>(new Map());
   const [editing, setEditing] = useState<Habit | null>(null);
@@ -70,20 +72,20 @@ export default function HabitsView() {
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
           />
-          <span>显示已归档</span>
+          <span>{t("显示已归档", "Show archived")}</span>
         </label>
         <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
           <button className="primary-btn" onClick={() => setCreating(true)}>
-            + 新建习惯
+            + {t("新建习惯", "New habit")}
           </button>
         </div>
       </div>
 
       {visible.length === 0 ? (
         <div className="empty">
-          还没有习惯。
+          {t("还没有习惯。", "No habits yet.")}
           <button className="link-btn" onClick={() => setCreating(true)}>
-            创建第一个
+            {t("创建第一个", "Create your first one")}
           </button>
         </div>
       ) : (
@@ -138,6 +140,7 @@ function HabitCard({
   onQuickLog: (value: number) => void;
   onEdit: () => void;
 }) {
+  const { t } = useT();
   const logMap = new Map<string, number>();
   for (const l of logs) logMap.set(l.date, l.value);
 
@@ -163,9 +166,11 @@ function HabitCard({
         <div className="habit-name">
           <span className="habit-emoji">{habit.emoji}</span>
           <span>{habit.name}</span>
-          {habit.archived_at && <span className="archived-tag">已归档</span>}
+          {habit.archived_at && (
+            <span className="archived-tag">{t("已归档", "Archived")}</span>
+          )}
         </div>
-        <button className="icon-btn" onClick={onEdit} aria-label="编辑">
+        <button className="icon-btn" onClick={onEdit} aria-label={t("编辑", "Edit")}>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path
               d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"
@@ -181,11 +186,11 @@ function HabitCard({
       <div className="habit-stats">
         <div>
           <span className="num">{streak}</span>
-          <span className="lbl">天连续</span>
+          <span className="lbl">{t("天连续", "day streak")}</span>
         </div>
         <div>
           <span className="num">{rate}%</span>
-          <span className="lbl">近 {HEATMAP_DAYS} 天</span>
+          <span className="lbl">{t(`近 ${HEATMAP_DAYS} 天`, `last ${HEATMAP_DAYS} d`)}</span>
         </div>
         {habit.kind === "quantity" && (
           <div>
@@ -195,7 +200,7 @@ function HabitCard({
                 / {habit.target_value} {habit.unit ?? ""}
               </span>
             </span>
-            <span className="lbl">今日</span>
+            <span className="lbl">{t("今日", "today")}</span>
           </div>
         )}
       </div>
@@ -217,7 +222,7 @@ function HabitCard({
               className={`primary-btn ${todayDone ? "muted" : ""}`}
               onClick={() => onQuickLog(todayDone ? 0 : 1)}
             >
-              {todayDone ? "✓ 今天已完成" : "标记今天完成"}
+              {todayDone ? t("✓ 今天已完成", "✓ Done for today") : t("标记今天完成", "Mark today done")}
             </button>
           ) : (
             <>
@@ -225,7 +230,10 @@ function HabitCard({
                 type="number"
                 step="0.1"
                 min={0}
-                placeholder={`今天进度 (${habit.unit ?? ""})`}
+                placeholder={t(
+                  `今天进度 (${habit.unit ?? ""})`,
+                  `Today's progress (${habit.unit ?? ""})`,
+                )}
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
                 onKeyDown={(e) => {
@@ -242,7 +250,7 @@ function HabitCard({
                   if (!isNaN(n)) onQuickLog(n);
                 }}
               >
-                记录
+                {t("记录", "Log")}
               </button>
               {todayValue > 0 && (
                 <button
@@ -252,7 +260,7 @@ function HabitCard({
                     onQuickLog(0);
                   }}
                 >
-                  清除
+                  {t("清除", "Clear")}
                 </button>
               )}
             </>

@@ -1,4 +1,5 @@
 import type { Task } from "../types";
+import { useT } from "../i18n";
 import TaskItem from "./TaskItem";
 
 interface Props {
@@ -16,25 +17,29 @@ export default function InboxView({
   onEdit,
   onAddClick,
 }: Props) {
-  const pending = tasks.filter((t) => !t.completed_at);
-  const done = tasks.filter((t) => !!t.completed_at);
+  const { t } = useT();
+  const pending = tasks.filter((task) => !task.completed_at);
+  const done = tasks.filter((task) => !!task.completed_at);
 
   return (
     <div>
       <div className="day-header">
         <div className="day-counts" style={{ marginLeft: "auto" }}>
-          {pending.length} 项待办 · {done.length} 项完成
+          {t(
+            `${pending.length} 项待办 · ${done.length} 项完成`,
+            `${pending.length} pending · ${done.length} done`,
+          )}
         </div>
       </div>
 
       <div className="task-section">
-        <div className="task-section-title">待办</div>
+        <div className="task-section-title">{t("待办", "To-do")}</div>
         {pending.length ? (
           <div className="task-list">
-            {pending.map((t) => (
+            {pending.map((task) => (
               <TaskItem
-                key={t.id}
-                task={t}
+                key={task.id}
+                task={task}
                 onToggle={onToggle}
                 onDelete={onDelete}
                 onEdit={onEdit}
@@ -43,9 +48,9 @@ export default function InboxView({
           </div>
         ) : (
           <div className="empty">
-            收件箱是空的。
+            {t("收件箱是空的。", "Inbox is empty.")}
             <button className="link-btn" onClick={onAddClick}>
-              添加一个没有日期的任务
+              {t("添加一个没有日期的任务", "Add an undated task")}
             </button>
           </div>
         )}
@@ -53,12 +58,12 @@ export default function InboxView({
 
       {done.length > 0 && (
         <div className="task-section">
-          <div className="task-section-title">已完成</div>
+          <div className="task-section-title">{t("已完成", "Completed")}</div>
           <div className="task-list">
-            {done.map((t) => (
+            {done.map((task) => (
               <TaskItem
-                key={t.id}
-                task={t}
+                key={task.id}
+                task={task}
                 onToggle={onToggle}
                 onDelete={onDelete}
                 onEdit={onEdit}

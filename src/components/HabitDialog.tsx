@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Habit, HabitKind, NewHabit } from "../types";
+import { useT } from "../i18n";
 
 const EMOJI_PRESETS = ["⭐", "📚", "🏃", "💪", "💧", "🧘", "📝", "🌙", "☀️", "🎯"];
 
@@ -18,6 +19,7 @@ export default function HabitDialog({
   onDelete,
   onArchiveToggle,
 }: Props) {
+  const { t } = useT();
   const editing = !!existing;
   const [name, setName] = useState(existing?.name ?? "");
   const [emoji, setEmoji] = useState(existing?.emoji ?? "⭐");
@@ -25,7 +27,7 @@ export default function HabitDialog({
   const [target, setTarget] = useState<string>(
     existing?.target_value != null ? String(existing.target_value) : "1",
   );
-  const [unit, setUnit] = useState(existing?.unit ?? "小时");
+  const [unit, setUnit] = useState(existing?.unit ?? t("小时", "hours"));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -53,20 +55,20 @@ export default function HabitDialog({
   return (
     <div className="scrim" onMouseDown={onCancel}>
       <form className="dialog" onMouseDown={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{editing ? "编辑习惯" : "新建习惯"}</h2>
+        <h2>{editing ? t("编辑习惯", "Edit habit") : t("新建习惯", "New habit")}</h2>
 
         <div className="field-row">
           <div className="field">
-            <label>名称</label>
+            <label>{t("名称", "Name")}</label>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="每天阅读、晨练、冥想…"
+              placeholder={t("每天阅读、晨练、冥想…", "Daily reading, morning run, meditation…")}
             />
           </div>
           <div className="field" style={{ maxWidth: 120 }}>
-            <label>图标</label>
+            <label>{t("图标", "Icon")}</label>
             <input value={emoji} onChange={(e) => setEmoji(e.target.value)} maxLength={4} />
           </div>
         </div>
@@ -85,21 +87,21 @@ export default function HabitDialog({
         </div>
 
         <div className="field">
-          <label>类型</label>
+          <label>{t("类型", "Type")}</label>
           <div className="segmented">
             <button
               type="button"
               className={kind === "binary" ? "active" : ""}
               onClick={() => setKind("binary")}
             >
-              二元 · 做没做
+              {t("二元 · 做没做", "Binary · done?")}
             </button>
             <button
               type="button"
               className={kind === "quantity" ? "active" : ""}
               onClick={() => setKind("quantity")}
             >
-              量化 · 看达标
+              {t("量化 · 看达标", "Quantitative · target")}
             </button>
           </div>
         </div>
@@ -107,7 +109,7 @@ export default function HabitDialog({
         {kind === "quantity" && (
           <div className="field-row">
             <div className="field">
-              <label>目标值</label>
+              <label>{t("目标值", "Target")}</label>
               <input
                 type="number"
                 step="0.1"
@@ -117,11 +119,11 @@ export default function HabitDialog({
               />
             </div>
             <div className="field">
-              <label>单位</label>
+              <label>{t("单位", "Unit")}</label>
               <input
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="小时、页、公里…"
+                placeholder={t("小时、页、公里…", "hours, pages, km…")}
               />
             </div>
           </div>
@@ -133,14 +135,22 @@ export default function HabitDialog({
               type="button"
               className="ghost-btn danger"
               onClick={async () => {
-                if (!confirm("删除这个习惯？所有打卡记录将一并清除。")) return;
+                if (
+                  !confirm(
+                    t(
+                      "删除这个习惯？所有打卡记录将一并清除。",
+                      "Delete this habit? All log entries will also be removed.",
+                    ),
+                  )
+                )
+                  return;
                 setBusy(true);
                 await onDelete();
                 setBusy(false);
               }}
               disabled={busy}
             >
-              删除
+              {t("删除", "Delete")}
             </button>
           )}
           {editing && onArchiveToggle && (
@@ -154,15 +164,15 @@ export default function HabitDialog({
               }}
               disabled={busy}
             >
-              {existing?.archived_at ? "恢复" : "归档"}
+              {existing?.archived_at ? t("恢复", "Restore") : t("归档", "Archive")}
             </button>
           )}
           <div style={{ flex: 1 }} />
           <button type="button" className="ghost-btn" onClick={onCancel}>
-            取消
+            {t("取消", "Cancel")}
           </button>
           <button type="submit" className="primary-btn" disabled={busy || !name.trim()}>
-            {editing ? "保存" : "添加"}
+            {editing ? t("保存", "Save") : t("添加", "Add")}
           </button>
         </div>
       </form>

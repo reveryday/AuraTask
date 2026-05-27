@@ -13,8 +13,10 @@ import {
 } from "../db/database";
 import type { Mindmap, MindmapNode, Task } from "../types";
 import { buildTreeLayout, type PositionedNode } from "../utils/tree";
+import { useT } from "../i18n";
 
 export default function MindmapsView() {
+  const { t } = useT();
   const [maps, setMaps] = useState<Mindmap[]>([]);
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [nodes, setNodes] = useState<MindmapNode[]>([]);
@@ -71,7 +73,7 @@ export default function MindmapsView() {
   }, [tasks]);
 
   const onCreateMap = async () => {
-    const title = prompt("新导图名称", "未命名");
+    const title = prompt(t("新导图名称", "Mindmap name"), t("未命名", "Untitled"));
     if (!title) return;
     const id = await createMindmap(title);
     setCurrentId(id);
@@ -81,15 +83,23 @@ export default function MindmapsView() {
   const onRenameMap = async () => {
     if (currentId == null) return;
     const cur = maps.find((m) => m.id === currentId);
-    const t = prompt("重命名", cur?.title ?? "");
-    if (!t) return;
-    await renameMindmap(currentId, t);
+    const newTitle = prompt(t("重命名", "Rename"), cur?.title ?? "");
+    if (!newTitle) return;
+    await renameMindmap(currentId, newTitle);
     await refreshMaps();
   };
 
   const onDeleteMap = async () => {
     if (currentId == null) return;
-    if (!confirm("删除整张导图？所有节点都会丢失。")) return;
+    if (
+      !confirm(
+        t(
+          "删除整张导图？所有节点都会丢失。",
+          "Delete the whole mindmap? All nodes will be lost.",
+        ),
+      )
+    )
+      return;
     await deleteMindmap(currentId);
     setCurrentId(null);
     await refreshMaps();
@@ -113,12 +123,12 @@ export default function MindmapsView() {
     if (currentId == null) return;
     const sibs = nodes.filter((n) => n.parent_id === parentId);
     const pos = sibs.length;
-    const id = await createMindmapNode(currentId, parentId, "新节点", pos);
+    const id = await createMindmapNode(currentId, parentId, t("新节点", "New node"), pos);
     await refreshNodes();
     setSelectedId(id);
     if (andEdit) {
       setEditingId(id);
-      setDraftText("新节点");
+      setDraftText(t("新节点", "New node"));
     }
   };
 
@@ -130,15 +140,21 @@ export default function MindmapsView() {
       .sort((a, b) => a.position - b.position);
     const idx = sibs.findIndex((s) => s.id === afterId);
     const newPos = idx >= 0 ? idx + 1 : sibs.length;
-    const id = await createMindmapNode(currentId, cur.parent_id, "新节点", newPos);
+    const id = await createMindmapNode(currentId, cur.parent_id, t("新节点", "New node"), newPos);
     await refreshNodes();
     setSelectedId(id);
     setEditingId(id);
-    setDraftText("新节点");
+    setDraftText(t("新节点", "New node"));
   };
 
   const removeNode = async (id: number, ask = true) => {
-    if (ask && !confirm("删除这个节点和它的所有子节点？")) return;
+    if (
+      ask &&
+      !confirm(
+        t("删除这个节点和它的所有子节点？", "Delete this node and all of its children?"),
+      )
+    )
+      return;
     const cur = nodes.find((n) => n.id === id);
     await deleteMindmapNode(id);
     if (currentId != null) await touchMindmap(currentId);
@@ -217,16 +233,16 @@ export default function MindmapsView() {
     <div className="mindmap-wrap">
       <aside className="mindmap-rail">
         <div className="mindmap-rail-head">
-          <span>我的导图</span>
-          <button className="icon-btn" onClick={onCreateMap} title="新建导图">
+          <span>{t("我的导图", "My mindmaps")}</span>
+          <button className="icon-btn" onClick={onCreateMap} title={t("新建导图", "New mindmap")}>
             +
           </button>
         </div>
         {maps.length === 0 && (
           <div className="empty-small">
-            还没有导图。
+            {t("还没有导图。", "No mindmaps yet.")}
             <button className="link-btn" onClick={onCreateMap}>
-              新建一个
+              {t("新建一个", "Create one")}
             </button>
           </div>
         )}
@@ -243,19 +259,22 @@ export default function MindmapsView() {
 
       <div className="mindmap-canvas-wrap">
         {currentId == null ? (
-          <div className="empty">选择或新建一张导图开始整理思路。</div>
+          <div className="empty">
+            {t("选择或新建一张导图开始整理思路。", "Pick or create a mindmap to start organizing.")}
+          </div>
         ) : (
           <>
             <div className="mindmap-toolbar">
               <button className="ghost-btn" onClick={onRenameMap}>
-                重命名
+                {t("重命名", "Rename")}
               </button>
               <button className="ghost-btn danger" onClick={onDeleteMap}>
-                删除
+                {t("删除", "Delete")}
               </button>
               <span className="mindmap-hint">
-                <kbd>Tab</kbd> 子主题 · <kbd>Enter</kbd> 同级 · <kbd>F2</kbd> 重命名 ·{" "}
-                <kbd>Del</kbd> 删除 · 双击编辑
+                <kbd>Tab</kbd> {t("子主题", "child")} · <kbd>Enter</kbd>{" "}
+                {t("同级", "sibling")} · <kbd>F2</kbd> {t("重命名", "rename")} ·{" "}
+                <kbd>Del</kbd> {t("删除", "delete")} · {t("双击编辑", "double-click to edit")}
               </span>
             </div>
             <div
@@ -337,7 +356,7 @@ export default function MindmapsView() {
                           }}
                         />
                       ) : (
-                        <span className="mind-text">{p.text || "（空）"}</span>
+                        <span className="mind-text">{p.text || t("（空）", "(empty)")}</span>
                       )}
                       {linked && (
                         <span
@@ -350,7 +369,7 @@ export default function MindmapsView() {
                       <div className="mind-actions">
                         <button
                           className="icon-btn tiny"
-                          title="添加子节点 (Tab)"
+                          title={t("添加子节点 (Tab)", "Add child (Tab)")}
                           onClick={(e) => {
                             e.stopPropagation();
                             addChild(p.id);
@@ -360,7 +379,7 @@ export default function MindmapsView() {
                         </button>
                         <button
                           className="icon-btn tiny"
-                          title={linked ? "解除关联" : "关联任务"}
+                          title={linked ? t("解除关联", "Unlink task") : t("关联任务", "Link to task")}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (linked) linkTask(p.id, null);
@@ -372,7 +391,7 @@ export default function MindmapsView() {
                         {p.parent_id != null && (
                           <button
                             className="icon-btn tiny danger"
-                            title="删除 (Del)"
+                            title={t("删除 (Del)", "Delete (Del)")}
                             onClick={(e) => {
                               e.stopPropagation();
                               removeNode(p.id);
@@ -385,7 +404,7 @@ export default function MindmapsView() {
                       {linkingId === p.id && (
                         <div className="mind-task-picker" onClick={(e) => e.stopPropagation()}>
                           {tasks.length === 0 ? (
-                            <div className="empty-small">没有未完成的任务</div>
+                            <div className="empty-small">{t("没有未完成的任务", "No open tasks")}</div>
                           ) : (
                             tasks.slice(0, 12).map((t) => (
                               <button

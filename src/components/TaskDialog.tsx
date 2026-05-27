@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { NewTask, Priority, Task, TimeSlot } from "../types";
-import { TIME_SLOT_LABEL, TIME_SLOT_ORDER } from "../types";
+import { TIME_SLOT_ORDER, timeSlotLabel } from "../types";
+import { useT } from "../i18n";
 
 interface Props {
   defaultDate: string;
@@ -19,6 +20,7 @@ export default function TaskDialog({
   onSubmit,
   onDelete,
 }: Props) {
+  const { t, lang } = useT();
   const editing = !!existing;
   const [title, setTitle] = useState(existing?.title ?? "");
   const [subject, setSubject] = useState(existing?.subject ?? "");
@@ -56,7 +58,7 @@ export default function TaskDialog({
 
   const handleDelete = async () => {
     if (!onDelete || busy) return;
-    if (!confirm("确定删除这个任务？")) return;
+    if (!confirm(t("确定删除这个任务？", "Delete this task?"))) return;
     setBusy(true);
     await onDelete();
     setBusy(false);
@@ -65,19 +67,19 @@ export default function TaskDialog({
   return (
     <div className="scrim" onMouseDown={onCancel}>
       <form className="dialog" onMouseDown={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{editing ? "编辑任务" : "新建任务"}</h2>
+        <h2>{editing ? t("编辑任务", "Edit task") : t("新建任务", "New task")}</h2>
         <div className="field">
-          <label>标题</label>
+          <label>{t("标题", "Title")}</label>
           <input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="例如：完成论文初稿引言部分"
+            placeholder={t("例如：完成论文初稿引言部分", "e.g. Write introduction draft")}
           />
         </div>
         <div className="field-row">
           <div className="field">
-            <label>日期</label>
+            <label>{t("日期", "Date")}</label>
             <input
               type="date"
               value={date}
@@ -87,13 +89,13 @@ export default function TaskDialog({
             />
           </div>
           <div className="field">
-            <label>类型</label>
+            <label>{t("类型", "Type")}</label>
             <select
               value={priority}
               onChange={(e) => setPriority(Number(e.target.value) as Priority)}
             >
-              <option value={1}>主要</option>
-              <option value={0}>延伸</option>
+              <option value={1}>{t("主要", "Primary")}</option>
+              <option value={0}>{t("延伸", "Secondary")}</option>
             </select>
           </div>
         </div>
@@ -103,19 +105,24 @@ export default function TaskDialog({
             checked={noDate}
             onChange={(e) => setNoDate(e.target.checked)}
           />
-          <span>暂不指定日期（放入「稍后」收件箱）</span>
+          <span>
+            {t(
+              "暂不指定日期（放入「稍后」收件箱）",
+              "No date yet (drop into Later)",
+            )}
+          </span>
         </label>
 
         {!noDate && (
           <div className="field">
-            <label>时间段</label>
+            <label>{t("时间段", "Time of day")}</label>
             <div className="segmented slot-seg">
               <button
                 type="button"
                 className={slot === null ? "active" : ""}
                 onClick={() => setSlot(null)}
               >
-                全天
+                {t("全天", "All day")}
               </button>
               {TIME_SLOT_ORDER.map((s) => (
                 <button
@@ -124,22 +131,22 @@ export default function TaskDialog({
                   className={`slot-${s} ${slot === s ? "active" : ""}`}
                   onClick={() => setSlot(s)}
                 >
-                  {TIME_SLOT_LABEL[s]}
+                  {timeSlotLabel(s, lang)}
                 </button>
               ))}
             </div>
           </div>
         )}
         <div className="field">
-          <label>标签（可选）</label>
+          <label>{t("标签（可选）", "Tag (optional)")}</label>
           <input
             value={subject ?? ""}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="论文、组会、阅读…"
+            placeholder={t("论文、组会、阅读…", "paper, group meeting, reading…")}
           />
         </div>
         <div className="field">
-          <label>备注（可选）</label>
+          <label>{t("备注（可选）", "Notes (optional)")}</label>
           <textarea value={notes ?? ""} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <div className="dialog-footer">
@@ -150,15 +157,15 @@ export default function TaskDialog({
               onClick={handleDelete}
               disabled={busy}
             >
-              删除
+              {t("删除", "Delete")}
             </button>
           )}
           <div style={{ flex: 1 }} />
           <button type="button" className="ghost-btn" onClick={onCancel}>
-            取消
+            {t("取消", "Cancel")}
           </button>
           <button type="submit" className="primary-btn" disabled={busy || !title.trim()}>
-            {editing ? "保存" : "添加"}
+            {editing ? t("保存", "Save") : t("添加", "Add")}
           </button>
         </div>
       </form>

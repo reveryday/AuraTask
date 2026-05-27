@@ -46,6 +46,12 @@ export interface FocusTimer {
   saveSettings: (next: FocusSettings) => void;
   onSessionRecorded?: () => void;
   setOnSessionRecorded: (fn: (() => void) | undefined) => void;
+  setNotificationMessages: (m: NotifMessages | undefined) => void;
+}
+
+export interface NotifMessages {
+  focusDone: { title: string; body: string };
+  breakDone: { title: string; body: string };
 }
 
 export function useFocusTimer(): FocusTimer {
@@ -55,6 +61,7 @@ export function useFocusTimer(): FocusTimer {
   const [taskId, setTaskId] = useState<number | "">("");
   const startedRef = useRef<string | null>(null);
   const onRecordedRef = useRef<(() => void) | undefined>(undefined);
+  const notifMsgsRef = useRef<NotifMessages | undefined>(undefined);
 
   const totalSec = kind === "focus" ? settings.focusMin * 60 : settings.breakMin * 60;
   const [remaining, setRemaining] = useState(totalSec);
@@ -89,9 +96,17 @@ export function useFocusTimer(): FocusTimer {
       nextKind === "focus" ? settings.focusMin * 60 : settings.breakMin * 60,
     );
     if (currentKind === "focus") {
-      notify("专注完成 🍅", `${settings.focusMin} 分钟到了，去休息一下吧。`);
+      const msgs = notifMsgsRef.current?.focusDone ?? {
+        title: "专注完成 🍅",
+        body: `${settings.focusMin} 分钟到了，去休息一下吧。`,
+      };
+      notify(msgs.title, msgs.body);
     } else {
-      notify("休息结束 ☕", "回来继续专注吧。");
+      const msgs = notifMsgsRef.current?.breakDone ?? {
+        title: "休息结束 ☕",
+        body: "回来继续专注吧。",
+      };
+      notify(msgs.title, msgs.body);
     }
   }, [kind, taskId, totalSec, settings.focusMin, settings.breakMin]);
 
@@ -147,6 +162,10 @@ export function useFocusTimer(): FocusTimer {
     onRecordedRef.current = fn;
   }, []);
 
+  const setNotificationMessages = useCallback((m: NotifMessages | undefined) => {
+    notifMsgsRef.current = m;
+  }, []);
+
   return {
     settings,
     kind,
@@ -162,5 +181,6 @@ export function useFocusTimer(): FocusTimer {
     skipToEnd,
     saveSettings,
     setOnSessionRecorded,
+    setNotificationMessages,
   };
 }

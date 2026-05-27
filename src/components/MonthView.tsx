@@ -1,5 +1,6 @@
 import type { Task } from "../types";
 import { isSameDay, monthGrid, toISODate } from "../utils/date";
+import { useT } from "../i18n";
 
 interface Props {
   anchor: Date;
@@ -8,9 +9,12 @@ interface Props {
   onPickDay: (d: Date) => void;
 }
 
-const HEAD = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const HEAD_ZH = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const HEAD_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function MonthView({ anchor, tasks, moods, onPickDay }: Props) {
+  const { lang } = useT();
+  const HEAD = lang === "zh" ? HEAD_ZH : HEAD_EN;
   const cells = monthGrid(anchor);
   const today = new Date();
   const byDay = new Map<string, Task[]>();

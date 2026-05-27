@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Task } from "../types";
 import { clearMood, getMood, setMood } from "../db/database";
 import { formatLongDate, isSameDay, toISODate } from "../utils/date";
+import { useT } from "../i18n";
 import TaskItem from "./TaskItem";
 import MoodPicker from "./MoodPicker";
 import TodayHabits from "./TodayHabits";
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Props) {
+  const { t, lang } = useT();
   const pending = tasks.filter((t) => !t.completed_at);
   const done = tasks.filter((t) => !!t.completed_at);
   const iso = toISODate(date);
@@ -47,9 +49,12 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Pro
   return (
     <div>
       <div className="day-header">
-        <div className="day-title">{formatLongDate(date)}</div>
+        <div className="day-title">{formatLongDate(date, lang)}</div>
         <div className="day-counts">
-          {pending.length} 项待办 · {done.length} 项完成
+          {t(
+            `${pending.length} 项待办 · ${done.length} 项完成`,
+            `${pending.length} pending · ${done.length} done`,
+          )}
         </div>
       </div>
 
@@ -58,13 +63,13 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Pro
       <TodayHabits dateISO={iso} isToday={isSameDay(date, new Date())} />
 
       <div className="task-section">
-        <div className="task-section-title">待办</div>
+        <div className="task-section-title">{t("待办", "To-do")}</div>
         {pending.length ? (
           <div className="task-list">
-            {pending.map((t) => (
+            {pending.map((task) => (
               <TaskItem
-                key={t.id}
-                task={t}
+                key={task.id}
+                task={task}
                 onToggle={onToggle}
                 onDelete={onDelete}
                 onEdit={onEdit}
@@ -72,18 +77,23 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Pro
             ))}
           </div>
         ) : (
-          <div className="empty">这一天暂时没有待办，是放松还是冲刺新计划？</div>
+          <div className="empty">
+            {t(
+              "这一天暂时没有待办，是放松还是冲刺新计划？",
+              "Nothing scheduled. Time to rest, or plan the next sprint?",
+            )}
+          </div>
         )}
       </div>
 
       {done.length > 0 && (
         <div className="task-section">
-          <div className="task-section-title">已完成</div>
+          <div className="task-section-title">{t("已完成", "Completed")}</div>
           <div className="task-list">
-            {done.map((t) => (
+            {done.map((task) => (
               <TaskItem
-                key={t.id}
-                task={t}
+                key={task.id}
+                task={task}
                 onToggle={onToggle}
                 onDelete={onDelete}
                 onEdit={onEdit}

@@ -7,7 +7,14 @@ export const TIME_SLOT_LABEL: Record<TimeSlot, string> = {
   afternoon: "下午",
   evening: "晚上",
 };
+const TIME_SLOT_LABEL_EN: Record<TimeSlot, string> = {
+  morning: "Morning",
+  afternoon: "Afternoon",
+  evening: "Evening",
+};
 export const TIME_SLOT_ORDER: TimeSlot[] = ["morning", "afternoon", "evening"];
+export const timeSlotLabel = (s: TimeSlot, lang: "zh" | "en" = "zh") =>
+  (lang === "zh" ? TIME_SLOT_LABEL : TIME_SLOT_LABEL_EN)[s];
 
 export interface Task {
   id: number;
@@ -122,10 +129,10 @@ export interface DailyMood {
   score: number; // 1..5
 }
 
-export const MOOD_OPTIONS: { emoji: string; score: number; label: string }[] = [
-  { emoji: "😄", score: 5, label: "很好" },
-  { emoji: "🙂", score: 4, label: "不错" },
-  { emoji: "😐", score: 3, label: "一般" },
-  { emoji: "😕", score: 2, label: "不太好" },
-  { emoji: "😭", score: 1, label: "糟糕" },
+export const MOOD_OPTIONS: { emoji: string; score: number; label: string; labelEn: string }[] = [
+  { emoji: "😄", score: 5, label: "很好", labelEn: "Great" },
+  { emoji: "🙂", score: 4, label: "不错", labelEn: "Good" },
+  { emoji: "😐", score: 3, label: "一般", labelEn: "Okay" },
+  { emoji: "😕", score: 2, label: "不太好", labelEn: "Meh" },
+  { emoji: "😭", score: 1, label: "糟糕", labelEn: "Bad" },
 ];

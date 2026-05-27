@@ -41,10 +41,25 @@ export const monthGrid = (anchor: Date): Date[] => {
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 };
 
-const WEEK_LABELS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
-export const weekdayLabel = (d: Date) => WEEK_LABELS[(d.getDay() + 6) % 7];
+type Lang = "zh" | "en";
+const WEEK_LABELS_ZH = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const WEEK_LABELS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTH_NAMES_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
-export const formatLongDate = (d: Date) =>
-  `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${weekdayLabel(d)}`;
+export const weekdayLabel = (d: Date, lang: Lang = "zh") =>
+  (lang === "zh" ? WEEK_LABELS_ZH : WEEK_LABELS_EN)[(d.getDay() + 6) % 7];
 
-export const formatMonth = (d: Date) => `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`;
+export const formatLongDate = (d: Date, lang: Lang = "zh") => {
+  if (lang === "en") {
+    return `${MONTH_NAMES_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${weekdayLabel(d, "en")}`;
+  }
+  return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${weekdayLabel(d, "zh")}`;
+};
+
+export const formatMonth = (d: Date, lang: Lang = "zh") => {
+  if (lang === "en") return `${MONTH_NAMES_EN[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`;
+};

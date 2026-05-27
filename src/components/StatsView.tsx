@@ -7,8 +7,9 @@ import {
   subjectBreakdown,
 } from "../db/database";
 import type { DayMetric, Habit, HabitLog, SubjectMetric } from "../types";
-import { addDays, startOfWeek, toISODate, weekdayLabel } from "../utils/date";
+import { addDays, formatMonth, startOfWeek, toISODate, weekdayLabel } from "../utils/date";
 import { completionRate, computeStreak } from "../utils/habits";
+import { useT } from "../i18n";
 
 type Range = "week" | "month";
 
@@ -56,6 +57,7 @@ function buildCells(range: Range, anchor: Date): DayCell[] {
 }
 
 export default function StatsView() {
+  const { t, lang } = useT();
   const [range, setRange] = useState<Range>("week");
   const [anchor, setAnchor] = useState(new Date());
   const [cells, setCells] = useState<DayCell[]>([]);
@@ -131,7 +133,7 @@ export default function StatsView() {
           const e = addDays(s, 6);
           return `${s.getMonth() + 1}/${s.getDate()} – ${e.getMonth() + 1}/${e.getDate()}`;
         })()
-      : `${anchor.getFullYear()} 年 ${anchor.getMonth() + 1} 月`;
+      : formatMonth(anchor, lang);
 
   const PALETTE = ["#4f46e5", "#10b981", "#f59e0b", "#ec4899", "#06b6d4", "#a855f7", "#94a3b8"];
 
@@ -143,48 +145,80 @@ export default function StatsView() {
             className={range === "week" ? "active" : ""}
             onClick={() => setRange("week")}
           >
-            本周
+            {t("本周", "This week")}
           </button>
           <button
             className={range === "month" ? "active" : ""}
             onClick={() => setRange("month")}
           >
-            本月
+            {t("本月", "This month")}
           </button>
         </div>
         <div className="stats-nav">
-          <button className="icon-btn" onClick={() => shift(-1)} aria-label="上一段">
+          <button
+            className="icon-btn"
+            onClick={() => shift(-1)}
+            aria-label={t("上一段", "Previous period")}
+          >
             ‹
           </button>
           <span className="stats-nav-label">{rangeLabel}</span>
-          <button className="icon-btn" onClick={() => shift(1)} aria-label="下一段">
+          <button
+            className="icon-btn"
+            onClick={() => shift(1)}
+            aria-label={t("下一段", "Next period")}
+          >
             ›
           </button>
           <button className="today-btn" onClick={() => setAnchor(new Date())}>
-            回到今天
+            {t("回到今天", "Back to today")}
           </button>
         </div>
       </div>
 
       <div className="kpi-row">
-        <Kpi label="专注总时长" value={totals.mins} unit="分钟" accent="#4f46e5" />
-        <Kpi label="完成任务" value={totals.done} unit={`/ ${totals.planned} 项`} accent="#10b981" />
-        <Kpi label="完成率" value={totals.rate} unit="%" accent="#f59e0b" />
-        <Kpi label="活跃天数" value={totals.activeDays} unit={`/ ${cells.length} 天`} accent="#ec4899" />
+        <Kpi
+          label={t("专注总时长", "Focus time")}
+          value={totals.mins}
+          unit={t("分钟", "min")}
+          accent="#4f46e5"
+        />
+        <Kpi
+          label={t("完成任务", "Tasks done")}
+          value={totals.done}
+          unit={t(`/ ${totals.planned} 项`, `/ ${totals.planned}`)}
+          accent="#10b981"
+        />
+        <Kpi
+          label={t("完成率", "Completion")}
+          value={totals.rate}
+          unit="%"
+          accent="#f59e0b"
+        />
+        <Kpi
+          label={t("活跃天数", "Active days")}
+          value={totals.activeDays}
+          unit={t(`/ ${cells.length} 天`, `/ ${cells.length} d`)}
+          accent="#ec4899"
+        />
       </div>
 
       <div className="panel">
         <div className="panel-head">
-          <h3>专注分钟数</h3>
-          <span className="panel-sub">每日累计</span>
+          <h3>{t("专注分钟数", "Focus minutes")}</h3>
+          <span className="panel-sub">{t("每日累计", "Per day")}</span>
         </div>
         <div className={`bar-chart ${range === "month" ? "dense" : ""}`}>
           {cells.map((c) => {
             const h = c.focus_min === 0 ? 2 : Math.max(6, (c.focus_min / maxFocus) * 160);
             const label =
-              range === "week" ? weekdayLabel(c.date) : String(c.date.getDate());
+              range === "week" ? weekdayLabel(c.date, lang) : String(c.date.getDate());
             return (
-              <div key={c.iso} className="bar-col" title={`${c.iso}: ${c.focus_min} 分钟`}>
+              <div
+                key={c.iso}
+                className="bar-col"
+                title={t(`${c.iso}: ${c.focus_min} 分钟`, `${c.iso}: ${c.focus_min} min`)}
+              >
                 <div className="bar-value">{c.focus_min || ""}</div>
                 <div className="bar" style={{ height: `${h}px` }} />
                 <div className="bar-x">{label}</div>
@@ -196,23 +230,25 @@ export default function StatsView() {
 
       <div className="panel">
         <div className="panel-head">
-          <h3>心情走势</h3>
-          <span className="panel-sub">5 最好 · 1 糟糕</span>
+          <h3>{t("心情走势", "Mood trend")}</h3>
+          <span className="panel-sub">{t("5 最好 · 1 糟糕", "5 best · 1 worst")}</span>
         </div>
         {cells.every((c) => c.mood_score === null) ? (
-          <div className="empty">这段时间还没记录心情。</div>
+          <div className="empty">
+            {t("这段时间还没记录心情。", "No mood entries for this period yet.")}
+          </div>
         ) : (
           <div className={`mood-track ${range === "month" ? "dense" : ""}`}>
             {cells.map((c) => {
               const score = c.mood_score ?? 0;
               const h = score === 0 ? 4 : 8 + (score - 1) * 36;
               const label =
-                range === "week" ? weekdayLabel(c.date) : String(c.date.getDate());
+                range === "week" ? weekdayLabel(c.date, lang) : String(c.date.getDate());
               return (
                 <div
                   key={c.iso}
                   className="mood-col"
-                  title={`${c.iso}: ${c.mood ?? "未记录"}`}
+                  title={`${c.iso}: ${c.mood ?? t("未记录", "no record")}`}
                 >
                   <div className="mood-emoji">{c.mood ?? ""}</div>
                   <div
@@ -230,8 +266,12 @@ export default function StatsView() {
       {habits.length > 0 && (
         <div className="panel">
           <div className="panel-head">
-            <h3>习惯坚持</h3>
-            <span className="panel-sub">{range === "week" ? "本周" : "本月"}完成率</span>
+            <h3>{t("习惯坚持", "Habit consistency")}</h3>
+            <span className="panel-sub">
+              {range === "week"
+                ? t("本周完成率", "This week's rate")
+                : t("本月完成率", "This month's rate")}
+            </span>
           </div>
           <div className="habit-summary-list">
             {habits.map((h) => {
@@ -244,7 +284,7 @@ export default function StatsView() {
                 <div key={h.id} className="habit-summary-row">
                   <span className="habit-emoji">{h.emoji}</span>
                   <span className="habit-summary-name">{h.name}</span>
-                  <span className="habit-summary-streak">🔥 {streak} 天</span>
+                  <span className="habit-summary-streak">{t(`🔥 ${streak} 天`, `🔥 ${streak} d`)}</span>
                   <div className="subject-bar" style={{ flex: 1 }}>
                     <div
                       className="subject-fill"
@@ -264,8 +304,8 @@ export default function StatsView() {
 
       <div className="panel">
         <div className="panel-head">
-          <h3>任务完成情况</h3>
-          <span className="panel-sub">绿色为已完成</span>
+          <h3>{t("任务完成情况", "Task completion")}</h3>
+          <span className="panel-sub">{t("绿色为已完成", "Green = done")}</span>
         </div>
         <div className={`bar-chart ${range === "month" ? "dense" : ""}`}>
           {cells.map((c) => {
@@ -292,11 +332,13 @@ export default function StatsView() {
 
       <div className="panel">
         <div className="panel-head">
-          <h3>标签分布</h3>
-          <span className="panel-sub">按专注时长</span>
+          <h3>{t("标签分布", "Tag breakdown")}</h3>
+          <span className="panel-sub">{t("按专注时长", "By focus minutes")}</span>
         </div>
         {subjects.length === 0 ? (
-          <div className="empty">这段时间还没有任务记录。</div>
+          <div className="empty">
+            {t("这段时间还没有任务记录。", "No tasks recorded for this period yet.")}
+          </div>
         ) : (
           <div className="subject-list">
             {subjects.map((s, i) => {
@@ -316,7 +358,10 @@ export default function StatsView() {
                     />
                   </div>
                   <div className="subject-meta">
-                    {s.focus_min} 分钟 · {s.task_count} 任务
+                    {t(
+                      `${s.focus_min} 分钟 · ${s.task_count} 任务`,
+                      `${s.focus_min} min · ${s.task_count} task${s.task_count === 1 ? "" : "s"}`,
+                    )}
                   </div>
                 </div>
               );

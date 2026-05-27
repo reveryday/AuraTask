@@ -7,6 +7,7 @@ import {
 } from "../db/database";
 import type { Habit } from "../types";
 import { isCompleted } from "../utils/habits";
+import { useT } from "../i18n";
 
 interface Props {
   dateISO: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function TodayHabits({ dateISO, isToday }: Props) {
+  const { t } = useT();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logs, setLogs] = useState<Map<number, number>>(new Map());
 
@@ -40,7 +42,9 @@ export default function TodayHabits({ dateISO, isToday }: Props) {
   return (
     <div className="task-section">
       <div className="task-section-title">
-        {isToday ? "今日习惯" : "当日习惯"}
+        {isToday
+          ? t("今日习惯", "Today's habits")
+          : t("当日习惯", "Habits for this day")}
       </div>
       <div className="task-list">
         {habits.map((h) => {
@@ -58,7 +62,7 @@ export default function TodayHabits({ dateISO, isToday }: Props) {
                   className={`today-habit-btn ${done ? "done" : ""}`}
                   onClick={() => log(h, done ? 0 : 1)}
                 >
-                  {done ? "已完成" : "标记完成"}
+                  {done ? t("已完成", "Done") : t("标记完成", "Mark done")}
                 </button>
               ) : (
                 <>
