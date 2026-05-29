@@ -1,12 +1,13 @@
 import type { Task } from "../types";
 import { useT } from "../i18n";
-import TaskItem from "./TaskItem";
+import TaskList from "./TaskList";
 
 interface Props {
   tasks: Task[];
   onToggle: (t: Task) => void;
   onDelete: (t: Task) => void;
   onEdit: (t: Task) => void;
+  onReorder: (tasks: Task[]) => void;
   onAddClick: () => void;
 }
 
@@ -15,6 +16,7 @@ export default function InboxView({
   onToggle,
   onDelete,
   onEdit,
+  onReorder,
   onAddClick,
 }: Props) {
   const { t } = useT();
@@ -35,17 +37,13 @@ export default function InboxView({
       <div className="task-section">
         <div className="task-section-title">{t("待办", "To-do")}</div>
         {pending.length ? (
-          <div className="task-list">
-            {pending.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-              />
-            ))}
-          </div>
+          <TaskList
+            tasks={pending}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onReorder={onReorder}
+          />
         ) : (
           <div className="empty">
             {t("收件箱是空的。", "Inbox is empty.")}
@@ -59,17 +57,13 @@ export default function InboxView({
       {done.length > 0 && (
         <div className="task-section">
           <div className="task-section-title">{t("已完成", "Completed")}</div>
-          <div className="task-list">
-            {done.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-              />
-            ))}
-          </div>
+          <TaskList
+            tasks={done}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onReorder={onReorder}
+          />
         </div>
       )}
     </div>

@@ -135,6 +135,16 @@ pub fn run() {
             sql: "ALTER TABLE tasks ADD COLUMN time_slot TEXT;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 8,
+            description: "add manual task ordering",
+            sql: "
+                ALTER TABLE tasks ADD COLUMN position INTEGER;
+                UPDATE tasks SET position = id WHERE position IS NULL;
+                CREATE INDEX IF NOT EXISTS idx_tasks_position ON tasks(position);
+            ",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

@@ -1,16 +1,30 @@
+import type { PointerEventHandler } from "react";
 import type { Task } from "../types";
 
 interface Props {
   task: Task;
+  dragging?: boolean;
+  onTaskPointerDown?: PointerEventHandler<HTMLDivElement>;
   onToggle: (t: Task) => void;
   onDelete: (t: Task) => void;
   onEdit?: (t: Task) => void;
 }
 
-export default function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
+export default function TaskItem({
+  task,
+  dragging,
+  onTaskPointerDown,
+  onToggle,
+  onDelete,
+  onEdit,
+}: Props) {
   const done = !!task.completed_at;
   return (
-    <div className={`task-card ${done ? "done" : ""}`}>
+    <div
+      className={`task-card ${done ? "done" : ""} ${dragging ? "dragging" : ""}`}
+      data-task-id={task.id}
+      onPointerDown={onTaskPointerDown}
+    >
       <button
         className={`checkbox ${done ? "checked" : ""}`}
         onClick={() => onToggle(task)}

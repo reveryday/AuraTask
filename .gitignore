@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local-only release scratch notes
+.release-notes-*.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

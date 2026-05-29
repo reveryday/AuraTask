@@ -24,7 +24,7 @@ export const getDb = () => {
 export const listTasksInRange = async (startISO: string, endISO: string): Promise<Task[]> => {
   const db = await getDb();
   return db.select<Task[]>(
-    "SELECT * FROM tasks WHERE due_date IS NOT NULL AND due_date >= $1 AND due_date <= $2 ORDER BY due_date ASC, priority DESC, id ASC",
+    "SELECT * FROM tasks WHERE due_date IS NOT NULL AND due_date >= $1 AND due_date <= $2 ORDER BY due_date ASC, completed_at IS NOT NULL, position ASC, created_at ASC, id ASC",
     [startISO, endISO],
   );
 };
@@ -32,14 +32,19 @@ export const listTasksInRange = async (startISO: string, endISO: string): Promis
 export const listInboxTasks = async (): Promise<Task[]> => {
   const db = await getDb();
   return db.select<Task[]>(
-    "SELECT * FROM tasks WHERE due_date IS NULL ORDER BY completed_at IS NOT NULL, priority DESC, created_at DESC",
+    "SELECT * FROM tasks WHERE due_date IS NULL ORDER BY completed_at IS NOT NULL, position ASC, created_at ASC, id ASC",
   );
 };
 
 export const createTask = async (t: NewTask): Promise<void> => {
   const db = await getDb();
+  const rows = await db.select<{ next_position: number }[]>(
+    "SELECT COALESCE(MAX(position), 0) + 1 as next_position FROM tasks WHERE (($1 IS NULL AND due_date IS NULL) OR due_date = $1)",
+    [t.due_date],
+  );
+  const position = rows[0]?.next_position ?? 1;
   await db.execute(
-    "INSERT INTO tasks (title, notes, subject, priority, due_date, time_slot) VALUES ($1, $2, $3, $4, $5, $6)",
+    "INSERT INTO tasks (title, notes, subject, priority, due_date, time_slot, position) VALUES ($1, $2, $3, $4, $5, $6, $7)",
     [
       t.title,
       t.notes ?? null,
@@ -47,6 +52,7 @@ export const createTask = async (t: NewTask): Promise<void> => {
       t.priority ?? 1,
       t.due_date,
       t.time_slot ?? null,
+      position,
     ],
   );
 };
@@ -67,7 +73,7 @@ export const deleteTask = async (id: number): Promise<void> => {
 export const listOpenTasks = async (): Promise<Task[]> => {
   const db = await getDb();
   return db.select<Task[]>(
-    "SELECT * FROM tasks WHERE completed_at IS NULL ORDER BY due_date IS NULL, due_date ASC, priority DESC, id ASC LIMIT 50",
+    "SELECT * FROM tasks WHERE completed_at IS NULL ORDER BY due_date IS NULL, due_date ASC, position ASC, created_at ASC, id ASC LIMIT 50",
   );
 };
 
@@ -366,4 +372,11 @@ export const updateTask = async (id: number, patch: Partial<NewTask>): Promise<v
   if (!fields.length) return;
   values.push(id);
   await db.execute(`UPDATE tasks SET ${fields.join(", ")} WHERE id = $${i}`, values);
+};
+
+export const updateTaskPositions = async (taskIds: number[]): Promise<void> => {
+  const db = await getDb();
+  for (const [index, id] of taskIds.entries()) {
+    await db.execute("UPDATE tasks SET position = $1 WHERE id = $2", [index + 1, id]);
+  }
 };

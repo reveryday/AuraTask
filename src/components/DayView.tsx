@@ -3,7 +3,7 @@ import type { Task } from "../types";
 import { clearMood, getMood, setMood } from "../db/database";
 import { formatLongDate, isSameDay, toISODate } from "../utils/date";
 import { useT } from "../i18n";
-import TaskItem from "./TaskItem";
+import TaskList from "./TaskList";
 import MoodPicker from "./MoodPicker";
 import TodayHabits from "./TodayHabits";
 
@@ -13,9 +13,10 @@ interface Props {
   onToggle: (t: Task) => void;
   onDelete: (t: Task) => void;
   onEdit: (t: Task) => void;
+  onReorder: (tasks: Task[]) => void;
 }
 
-export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Props) {
+export default function DayView({ date, tasks, onToggle, onDelete, onEdit, onReorder }: Props) {
   const { t, lang } = useT();
   const pending = tasks.filter((t) => !t.completed_at);
   const done = tasks.filter((t) => !!t.completed_at);
@@ -65,17 +66,13 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Pro
       <div className="task-section">
         <div className="task-section-title">{t("待办", "To-do")}</div>
         {pending.length ? (
-          <div className="task-list">
-            {pending.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-              />
-            ))}
-          </div>
+          <TaskList
+            tasks={pending}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onReorder={onReorder}
+          />
         ) : (
           <div className="empty">
             {t(
@@ -89,17 +86,13 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit }: Pro
       {done.length > 0 && (
         <div className="task-section">
           <div className="task-section-title">{t("已完成", "Completed")}</div>
-          <div className="task-list">
-            {done.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-              />
-            ))}
-          </div>
+          <TaskList
+            tasks={done}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onReorder={onReorder}
+          />
         </div>
       )}
     </div>

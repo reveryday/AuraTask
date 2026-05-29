@@ -26,6 +26,7 @@ export interface Task {
   completed_at: string | null;
   created_at: string;
   time_slot: TimeSlot | null;
+  position: number;
 }
 
 export interface NewTask {

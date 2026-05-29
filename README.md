@@ -6,23 +6,18 @@
 [![Downloads](https://img.shields.io/github/downloads/reveryday/AuraTask/total?style=flat-square)](https://github.com/reveryday/AuraTask/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue?style=flat-square)](#install-end-user)
 
-AuraTask folds the handful of things a graduate student actually does every day — planning tasks, focusing in short bursts, building habits, mapping out ideas, tracking how you feel — into a single lightweight native app. Everything lives in a local SQLite file. No accounts, no cloud, no telemetry. Close it and it forgets you exist.
+AuraTask folds the handful of things a graduate student actually does every day — planning tasks, focusing in short bursts, building habits, mapping out ideas, tracking how you feel — into a single lightweight native app. Everything lives in a local SQLite file. No accounts, no cloud, no network dependency.
 
 ## Features
 
-- **Day / week / month** views at any granularity, tasks tagged as **primary** or **secondary** ("延伸"), week view banded by **morning / afternoon / evening** color blocks;
-- **Later inbox** — a parking spot for undated tasks until you have time;
-
-- Pomodoro timer with **custom focus / break lengths** (25/5, 50/10, 90/20 presets), can be bound to a task ("I'm focusing on…"), end-of-session is logged automatically and pops a Windows notification;
-
-- **Binary habits** ("did I do it?") and **quantitative habits** (e.g. study 7h/day — only counts when the target is hit), each card shows **current streak**, **30-day completion rate**, and a **mini heatmap**;
-- **Left-to-right mindmaps**, multiple named maps, nodes can **link to a task** and reflect its completion state;
-
+- Task management: switch freely between day / week / month views, mark tasks as **primary / secondary**, and use morning / afternoon / evening color bands in week view;
+- Later tasks: a parking spot for undated tasks until you have time to schedule them;
+- Pomodoro timer: custom focus / break lengths, task binding for "I'm focusing on...", automatic session logging, and Windows notifications when a session ends;
+- Habit tracking: binary habits and quantitative habits, with current streak, 30-day completion rate, and a mini heatmap;
+- Simple mindmaps: left-to-right auto-layout tree maps, multiple named maps, and nodes that can **link to tasks** with completion state shown automatically;
 - One-tap daily **mood emoji** (😄🙂😐😕😭), visible as small badges on the week/month grid;
-- A **statistics** page rolls up weekly/monthly focus minutes, completion rate, active days, mood trend, habit streaks, and tag-time breakdown;
-
-- **One-click JSON backup / restore** (export to OneDrive/Dropbox — survive Windows reinstalls)
-- Local SQLite, schema managed via migration versions
+- Statistics: weekly/monthly focus minutes, completion rate, active days, mood trend, habit consistency, and tag-time breakdown;
+- Data backup: **one-click JSON backup / restore** (export to OneDrive/Dropbox and survive Windows reinstalls);
 
 ## Keyboard shortcuts
 
@@ -56,13 +51,11 @@ Inside a mindmap:
 - Desktop plugins: `tauri-plugin-window-state`, `tauri-plugin-notification`, `tauri-plugin-dialog`, `tauri-plugin-fs`
 - Hand-written CSS only (no UI kit), layered surfaces and hairline borders inspired by macOS
 
-Data is stored at `%APPDATA%\com.auratask.app\auratask.db`.
-
 ## Install (end user)
 
 **👉 [Download the latest installer](https://github.com/reveryday/AuraTask/releases/latest)** (Windows 10 / 11 `.msi` or `.exe`).
 
-The build is unsigned, so SmartScreen may warn you the first time — click *More info → Run anyway*. After installation your data lives at `%APPDATA%\com.auratask.app\auratask.db` and you can back it up from the sidebar at any time.
+The build is unsigned, so SmartScreen may warn you the first time. After installation, your data lives at `%APPDATA%\com.auratask.app\auratask.db`, and you can back it up from the sidebar at any time.
 
 ## Develop
 
@@ -72,8 +65,6 @@ The build is unsigned, so SmartScreen may warn you the first time — click *Mor
 - **Rust** stable (install via `rustup`)
 - **Visual Studio Build Tools 2022** — make sure the *Desktop development with C++* workload is selected (provides `link.exe`)
 - **Windows 10 SDK** or Windows 11 SDK (10 SDK has fewer install hiccups)
-
-Quick sanity check: `where.exe link` should print a path.
 
 ### Run
 

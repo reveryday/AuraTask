@@ -8,11 +8,10 @@ import StatsView from "./components/StatsView";
 import InboxView from "./components/InboxView";
 import HabitsView from "./components/HabitsView";
 import MindmapsView from "./components/MindmapsView";
-import ThemeToggle from "./components/ThemeToggle";
-import LangToggle from "./components/LangToggle";
-import BackupActions from "./components/BackupActions";
 import WindowControls from "./components/WindowControls";
 import TopbarChips from "./components/TopbarChips";
+import HelpDialog from "./components/HelpDialog";
+import SettingsDialog from "./components/SettingsDialog";
 import { useFocusTimer } from "./hooks/useFocusTimer";
 import { useT } from "./i18n";
 import {
@@ -23,6 +22,7 @@ import {
   listTasksInRange,
   toggleTask,
   updateTask,
+  updateTaskPositions,
 } from "./db/database";
 import { notify } from "./utils/notify";
 import type { NewTask, Task, ViewMode } from "./types";
@@ -74,6 +74,8 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [moods, setMoods] = useState<Record<string, string>>({});
   const [showAdd, setShowAdd] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [lastCalendarView, setLastCalendarView] = useState<"day" | "week" | "month">(
     () => {
@@ -165,6 +167,11 @@ export default function App() {
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
       if (inField) return;
+      if (e.key === "F1" || ((e.ctrlKey || e.metaKey) && e.key === "/")) {
+        e.preventDefault();
+        setShowHelp(true);
+        return;
+      }
       if (!(e.ctrlKey || e.metaKey)) return;
 
       if (e.key === "n" || e.key === "N") {
@@ -246,6 +253,10 @@ export default function App() {
     await deleteTask(t.id);
     await refresh();
   };
+  const onReorder = async (orderedTasks: Task[]) => {
+    await updateTaskPositions(orderedTasks.map((task) => task.id));
+    await refresh();
+  };
 
   const defaultDateForAdd = useMemo(() => toISODate(anchor), [anchor]);
 
@@ -315,9 +326,10 @@ export default function App() {
           <span>{t("学习统计", "Statistics")}</span>
         </button>
         <div style={{ marginTop: "auto" }} />
-        <BackupActions onChanged={refresh} />
-        <LangToggle />
-        <ThemeToggle />
+        <button className="nav-item" onClick={() => setShowSettings(true)}>
+          <span>⚙️</span>
+          <span>{t("设置", "Settings")}</span>
+        </button>
       </aside>
 
       <main className="main">
@@ -449,6 +461,7 @@ export default function App() {
               onToggle={onToggle}
               onDelete={onDelete}
               onEdit={setEditingTask}
+              onReorder={onReorder}
             />
           )}
           {view === "week" && (
@@ -484,6 +497,7 @@ export default function App() {
               onToggle={onToggle}
               onDelete={onDelete}
               onEdit={setEditingTask}
+              onReorder={onReorder}
               onAddClick={() => setShowAdd(true)}
             />
           )}
@@ -505,6 +519,14 @@ export default function App() {
           onCancel={() => setEditingTask(null)}
           onSubmit={onSaveEdit}
           onDelete={onDeleteEdit}
+        />
+      )}
+      {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
+      {showSettings && (
+        <SettingsDialog
+          onClose={() => setShowSettings(false)}
+          onOpenHelp={() => setShowHelp(true)}
+          onChanged={refresh}
         />
       )}
     </div>

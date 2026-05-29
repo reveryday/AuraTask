@@ -330,6 +330,11 @@ body {
   width: 100%;
   text-align: left;
 }
+.nav-item > span:first-child {
+  width: 18px;
+  flex-shrink: 0;
+  text-align: center;
+}
 .nav-item:hover {
   background: rgba(15, 23, 42, 0.04);
   color: var(--text);
@@ -678,6 +683,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding-bottom: 2px;
+}
+.task-list.reordering {
+  user-select: none;
 }
 .task-card {
   display: flex;
@@ -689,6 +698,11 @@ body {
   border-radius: 10px;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.15s, transform 0.05s, background 0.15s;
+}
+.task-card.dragging {
+  cursor: grabbing;
+  opacity: 0.65;
+  transform: scale(0.99);
 }
 .task-card:hover {
   background: var(--surface-solid);
@@ -1011,6 +1025,108 @@ body {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+}
+.help-dialog {
+  width: 620px;
+  max-height: min(760px, 88vh);
+  overflow: hidden;
+}
+.settings-dialog {
+  width: 430px;
+}
+.help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.help-content {
+  display: grid;
+  gap: 18px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.help-section {
+  display: grid;
+  gap: 9px;
+}
+.help-section h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.help-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.shortcut-table {
+  display: grid;
+  gap: 6px;
+}
+.shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(104px, max-content) 1fr;
+  gap: 12px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.shortcut-row kbd {
+  justify-self: start;
+  min-width: 76px;
+  padding: 3px 8px;
+  border: 0.5px solid var(--hairline);
+  border-bottom-color: var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: center;
+}
+.settings-section {
+  display: grid;
+  gap: 8px;
+}
+.settings-section-title {
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.settings-row,
+.settings-dialog .nav-item,
+.settings-dialog .theme-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: left;
+}
+.settings-row > span:first-child,
+.settings-dialog .nav-item > span:first-child,
+.settings-dialog .theme-toggle-icon {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.settings-row:hover,
+.settings-dialog .nav-item:hover,
+.settings-dialog .theme-toggle:hover {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--text);
+}
+[data-theme="dark"] .settings-row:hover,
+[data-theme="dark"] .settings-dialog .nav-item:hover,
+[data-theme="dark"] .settings-dialog .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 .field {
   display: flex;
