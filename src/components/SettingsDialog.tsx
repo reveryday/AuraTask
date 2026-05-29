@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
+import { DAY_START_MAX, DAY_START_MIN } from "../utils/settings";
 import BackupActions from "./BackupActions";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -12,6 +14,12 @@ interface Props {
 
 export default function SettingsDialog({ onClose, onOpenHelp, onChanged }: Props) {
   const { t } = useT();
+  const { dayStartHour, setDayStartHour } = useSettings();
+
+  const hourOptions = Array.from(
+    { length: DAY_START_MAX - DAY_START_MIN + 1 },
+    (_, i) => DAY_START_MIN + i,
+  );
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -61,6 +69,32 @@ export default function SettingsDialog({ onClose, onOpenHelp, onChanged }: Props
           <div className="settings-section-title">{t("偏好", "Preferences")}</div>
           <LangToggle />
           <ThemeToggle />
+          <div className="settings-field">
+            <div className="settings-field-text">
+              <span>{t("一天的开始", "Day starts at")}</span>
+              <span className="settings-field-hint">
+                {t(
+                  "熬夜到凌晨也算前一天，统计随之调整",
+                  "Late-night hours count toward the previous day",
+                )}
+              </span>
+            </div>
+            <select
+              className="settings-select"
+              value={dayStartHour}
+              onChange={(e) => {
+                setDayStartHour(Number(e.target.value));
+                onChanged();
+              }}
+            >
+              {hourOptions.map((h) => (
+                <option key={h} value={h}>
+                  {`${String(h).padStart(2, "0")}:00`}
+                  {h === 0 ? t("（默认）", " (default)") : ""}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     </div>

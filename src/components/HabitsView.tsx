@@ -10,15 +10,17 @@ import {
   upsertHabitLog,
 } from "../db/database";
 import type { Habit, HabitLog, NewHabit } from "../types";
-import { addDays, toISODate } from "../utils/date";
+import { addDays, fromISODate, toISODate } from "../utils/date";
 import { completionRate, computeStreak, isCompleted } from "../utils/habits";
 import HabitDialog from "./HabitDialog";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
 
 const HEATMAP_DAYS = 30;
 
 export default function HabitsView() {
   const { t } = useT();
+  const { todayISO } = useSettings();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logsByHabit, setLogsByHabit] = useState<Map<number, HabitLog[]>>(new Map());
   const [editing, setEditing] = useState<Habit | null>(null);
@@ -27,7 +29,7 @@ export default function HabitsView() {
 
   const refresh = useCallback(async () => {
     const all = await listAllHabits();
-    const today = new Date();
+    const today = fromISODate(todayISO);
     const start = toISODate(addDays(today, -HEATMAP_DAYS + 1));
     const end = toISODate(today);
     const logs = await listAllLogsInRange(start, end);
@@ -39,13 +41,11 @@ export default function HabitsView() {
     }
     setHabits(all);
     setLogsByHabit(map);
-  }, []);
+  }, [todayISO]);
 
   useEffect(() => {
     refresh().catch(console.error);
   }, [refresh]);
-
-  const todayISO = toISODate(new Date());
 
   const quickLog = async (h: Habit, value: number) => {
     if (value === 0) await clearHabitLog(h.id, todayISO);
@@ -141,16 +141,17 @@ function HabitCard({
   onEdit: () => void;
 }) {
   const { t } = useT();
+  const todayDate = fromISODate(todayISO);
   const logMap = new Map<string, number>();
   for (const l of logs) logMap.set(l.date, l.value);
 
-  const streak = computeStreak(habit, logMap);
+  const streak = computeStreak(habit, logMap, todayDate);
   const rate = completionRate(habit, logs, HEATMAP_DAYS);
   const todayValue = logMap.get(todayISO) ?? 0;
   const todayDone = isCompleted(habit, todayValue);
 
   const cells = Array.from({ length: HEATMAP_DAYS }, (_, i) => {
-    const d = addDays(new Date(), -(HEATMAP_DAYS - 1 - i));
+    const d = addDays(todayDate, -(HEATMAP_DAYS - 1 - i));
     const iso = toISODate(d);
     const v = logMap.get(iso);
     return { iso, value: v, ratio: ratioOf(habit, v) };

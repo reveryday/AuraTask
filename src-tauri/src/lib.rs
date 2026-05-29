@@ -145,6 +145,18 @@ pub fn run() {
             ",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 9,
+            description: "create daily_notes table",
+            sql: "
+                CREATE TABLE IF NOT EXISTS daily_notes (
+                    date TEXT PRIMARY KEY,
+                    text TEXT NOT NULL,
+                    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+                );
+            ",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

@@ -9,17 +9,19 @@ interface BackupPayload {
   tasks: unknown[];
   focus_sessions: unknown[];
   daily_moods: unknown[];
+  daily_notes: unknown[];
   habits: unknown[];
   habit_logs: unknown[];
   mindmaps: unknown[];
   mindmap_nodes: unknown[];
 }
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 const TABLES: { key: keyof Omit<BackupPayload, "schema_version" | "exported_at" | "app">; sql: string }[] = [
   { key: "tasks", sql: "SELECT * FROM tasks" },
   { key: "focus_sessions", sql: "SELECT * FROM focus_sessions" },
   { key: "daily_moods", sql: "SELECT * FROM daily_moods" },
+  { key: "daily_notes", sql: "SELECT * FROM daily_notes" },
   { key: "habits", sql: "SELECT * FROM habits" },
   { key: "habit_logs", sql: "SELECT * FROM habit_logs" },
   { key: "mindmaps", sql: "SELECT * FROM mindmaps" },
@@ -35,6 +37,7 @@ export async function exportBackup(): Promise<string | null> {
     tasks: [],
     focus_sessions: [],
     daily_moods: [],
+    daily_notes: [],
     habits: [],
     habit_logs: [],
     mindmaps: [],
@@ -80,6 +83,7 @@ export async function importBackup(): Promise<{ replaced: number } | null> {
   await db.execute("DELETE FROM habit_logs");
   await db.execute("DELETE FROM habits");
   await db.execute("DELETE FROM daily_moods");
+  await db.execute("DELETE FROM daily_notes");
   await db.execute("DELETE FROM focus_sessions");
   await db.execute("DELETE FROM tasks");
 
@@ -119,6 +123,12 @@ export async function importBackup(): Promise<{ replaced: number } | null> {
     await db.execute(
       "INSERT INTO daily_moods (date, mood, score, updated_at) VALUES ($1,$2,$3,$4)",
       [row.date, row.mood, row.score, row.updated_at],
+    );
+  }
+  for (const row of (data.daily_notes ?? []) as any[]) {
+    await db.execute(
+      "INSERT INTO daily_notes (date, text, updated_at) VALUES ($1,$2,$3)",
+      [row.date, row.text, row.updated_at ?? new Date().toISOString()],
     );
   }
   for (const row of data.habits as any[]) {

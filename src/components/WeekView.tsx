@@ -1,6 +1,7 @@
 import type { Task, TimeSlot } from "../types";
 import { TIME_SLOT_ORDER } from "../types";
-import { isSameDay, toISODate, weekDays, weekdayLabel } from "../utils/date";
+import { toISODate, weekDays, weekdayLabel } from "../utils/date";
+import { useSettings } from "../settings";
 
 interface Props {
   anchor: Date;
@@ -18,7 +19,7 @@ export default function WeekView({
   onToggle,
 }: Props) {
   const days = weekDays(anchor);
-  const today = new Date();
+  const { isToday } = useSettings();
 
   // group by day, then by slot ("all-day" key for nullable slot)
   type DayBuckets = { all: Task[]; bySlot: Record<TimeSlot, Task[]> };
@@ -43,7 +44,7 @@ export default function WeekView({
         return (
           <div
             key={key}
-            className={`week-col ${isSameDay(d, today) ? "today" : ""}`}
+            className={`week-col ${isToday(d) ? "today" : ""}`}
             onClick={() => onPickDay(d)}
           >
             <div className="week-col-head">

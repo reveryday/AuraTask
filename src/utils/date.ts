@@ -8,6 +8,15 @@ export const fromISODate = (s: string): Date => {
   return new Date(y, m - 1, d);
 };
 
+/**
+ * The calendar-date label that an instant belongs to once the "day starts at
+ * `dayStartHour`" rule is applied. With dayStartHour=4, anything before 04:00
+ * counts toward the previous calendar day. Use this for "now"; calendar-date
+ * labels already stored on tasks/cells are compared against the result as-is.
+ */
+export const logicalDateISO = (d: Date, dayStartHour: number): string =>
+  toISODate(new Date(d.getTime() - dayStartHour * 3600_000));
+
 export const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&

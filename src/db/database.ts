@@ -1,6 +1,9 @@
 import Database from "@tauri-apps/plugin-sql";
+import { logicalDateISO } from "../utils/date";
+import { getDayStartHour } from "../utils/settings";
 import type {
   DailyMood,
+  DailyNote,
   DayMetric,
   FocusSession,
   Habit,
@@ -79,7 +82,9 @@ export const listOpenTasks = async (): Promise<Task[]> => {
 
 export const createFocusSession = async (s: NewFocusSession): Promise<void> => {
   const db = await getDb();
-  const date = s.started_at.slice(0, 10);
+  // Bucket the session into the logical day it started in (respects the
+  // user's "day starts at" preference for night owls).
+  const date = logicalDateISO(new Date(s.started_at), getDayStartHour());
   await db.execute(
     "INSERT INTO focus_sessions (task_id, kind, duration_sec, session_date, started_at, ended_at) VALUES ($1, $2, $3, $4, $5, $6)",
     [s.task_id, s.kind, s.duration_sec, date, s.started_at, s.ended_at],
@@ -180,6 +185,31 @@ export const listMoodsInRange = async (
   return db.select<DailyMood[]>(
     "SELECT * FROM daily_moods WHERE date BETWEEN $1 AND $2 ORDER BY date ASC",
     [startISO, endISO],
+  );
+};
+
+// ----- Daily note to self -----
+
+export const getDailyNote = async (date: string): Promise<string | null> => {
+  const db = await getDb();
+  const rows = await db.select<DailyNote[]>(
+    "SELECT date, text FROM daily_notes WHERE date = $1",
+    [date],
+  );
+  return rows[0]?.text ?? null;
+};
+
+export const setDailyNote = async (date: string, text: string): Promise<void> => {
+  const db = await getDb();
+  const trimmed = text.trim();
+  if (!trimmed) {
+    await db.execute("DELETE FROM daily_notes WHERE date = $1", [date]);
+    return;
+  }
+  await db.execute(
+    "INSERT INTO daily_notes (date, text, updated_at) VALUES ($1, $2, datetime('now')) " +
+      "ON CONFLICT(date) DO UPDATE SET text=excluded.text, updated_at=excluded.updated_at",
+    [date, trimmed],
   );
 };
 

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Task } from "../types";
-import { clearMood, getMood, setMood } from "../db/database";
-import { formatLongDate, isSameDay, toISODate } from "../utils/date";
+import { clearMood, getDailyNote, getMood, setDailyNote, setMood } from "../db/database";
+import { formatLongDate, toISODate } from "../utils/date";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
 import TaskList from "./TaskList";
 import MoodPicker from "./MoodPicker";
+import DailyNote from "./DailyNote";
 import TodayHabits from "./TodayHabits";
 
 interface Props {
@@ -18,16 +20,30 @@ interface Props {
 
 export default function DayView({ date, tasks, onToggle, onDelete, onEdit, onReorder }: Props) {
   const { t, lang } = useT();
+  const { isToday } = useSettings();
   const pending = tasks.filter((t) => !t.completed_at);
   const done = tasks.filter((t) => !!t.completed_at);
   const iso = toISODate(date);
   const [mood, setMoodState] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
     getMood(iso)
       .then((m) => setMoodState(m?.mood ?? null))
       .catch(console.error);
+    getDailyNote(iso)
+      .then((n) => setNote(n))
+      .catch(console.error);
   }, [iso]);
+
+  const saveNote = async (text: string) => {
+    setNote(text || null);
+    try {
+      await setDailyNote(iso, text);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const pickMood = async (emoji: string, score: number) => {
     setMoodState(emoji);
@@ -61,7 +77,9 @@ export default function DayView({ date, tasks, onToggle, onDelete, onEdit, onReo
 
       <MoodPicker value={mood} onPick={pickMood} onClear={dropMood} />
 
-      <TodayHabits dateISO={iso} isToday={isSameDay(date, new Date())} />
+      <DailyNote value={note} onSave={saveNote} />
+
+      <TodayHabits dateISO={iso} isToday={isToday(date)} />
 
       <div className="task-section">
         <div className="task-section-title">{t("待办", "To-do")}</div>

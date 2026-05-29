@@ -130,6 +130,11 @@ export interface DailyMood {
   score: number; // 1..5
 }
 
+export interface DailyNote {
+  date: string;
+  text: string;
+}
+
 export const MOOD_OPTIONS: { emoji: string; score: number; label: string; labelEn: string }[] = [
   { emoji: "😄", score: 5, label: "很好", labelEn: "Great" },
   { emoji: "🙂", score: 4, label: "不错", labelEn: "Good" },

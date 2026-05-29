@@ -1,6 +1,7 @@
 import type { Task } from "../types";
-import { isSameDay, monthGrid, toISODate } from "../utils/date";
+import { monthGrid, toISODate } from "../utils/date";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
 
 interface Props {
   anchor: Date;
@@ -14,9 +15,9 @@ const HEAD_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function MonthView({ anchor, tasks, moods, onPickDay }: Props) {
   const { lang } = useT();
+  const { isToday } = useSettings();
   const HEAD = lang === "zh" ? HEAD_ZH : HEAD_EN;
   const cells = monthGrid(anchor);
-  const today = new Date();
   const byDay = new Map<string, Task[]>();
   for (const t of tasks) {
     if (!t.due_date) continue;
@@ -36,11 +37,10 @@ export default function MonthView({ anchor, tasks, moods, onPickDay }: Props) {
         const key = toISODate(d);
         const list = byDay.get(key) ?? [];
         const inMonth = d.getMonth() === anchor.getMonth();
-        const isToday = isSameDay(d, today);
         return (
           <div
             key={key}
-            className={`month-cell ${inMonth ? "" : "other-month"} ${isToday ? "today" : ""}`}
+            className={`month-cell ${inMonth ? "" : "other-month"} ${isToday(d) ? "today" : ""}`}
             onClick={() => onPickDay(d)}
           >
             <div className="month-cell-head">

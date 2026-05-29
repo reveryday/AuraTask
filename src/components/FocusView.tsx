@@ -5,9 +5,9 @@ import {
   todayFocusStats,
 } from "../db/database";
 import type { FocusSession, Task } from "../types";
-import { toISODate } from "../utils/date";
 import type { FocusTimer } from "../hooks/useFocusTimer";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
 
 interface Stats {
   sessions: number;
@@ -20,6 +20,7 @@ interface Props {
 
 export default function FocusView({ timer }: Props) {
   const { t } = useT();
+  const { todayISO } = useSettings();
   const {
     settings,
     kind,
@@ -44,7 +45,7 @@ export default function FocusView({ timer }: Props) {
   const [recent, setRecent] = useState<FocusSession[]>([]);
 
   const refreshStats = async () => {
-    const today = toISODate(new Date());
+    const today = todayISO;
     const [s, r] = await Promise.all([todayFocusStats(today), recentFocusSessions(6)]);
     setStats(s);
     setRecent(r);

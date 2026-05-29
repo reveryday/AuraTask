@@ -7,9 +7,17 @@ import {
   subjectBreakdown,
 } from "../db/database";
 import type { DayMetric, Habit, HabitLog, SubjectMetric } from "../types";
-import { addDays, formatMonth, startOfWeek, toISODate, weekdayLabel } from "../utils/date";
+import {
+  addDays,
+  formatMonth,
+  fromISODate,
+  startOfWeek,
+  toISODate,
+  weekdayLabel,
+} from "../utils/date";
 import { completionRate, computeStreak } from "../utils/habits";
 import { useT } from "../i18n";
+import { useSettings } from "../settings";
 
 type Range = "week" | "month";
 
@@ -58,8 +66,9 @@ function buildCells(range: Range, anchor: Date): DayCell[] {
 
 export default function StatsView() {
   const { t, lang } = useT();
+  const { todayISO } = useSettings();
   const [range, setRange] = useState<Range>("week");
-  const [anchor, setAnchor] = useState(new Date());
+  const [anchor, setAnchor] = useState(() => fromISODate(todayISO));
   const [cells, setCells] = useState<DayCell[]>([]);
   const [subjects, setSubjects] = useState<SubjectMetric[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -170,7 +179,7 @@ export default function StatsView() {
           >
             ›
           </button>
-          <button className="today-btn" onClick={() => setAnchor(new Date())}>
+          <button className="today-btn" onClick={() => setAnchor(fromISODate(todayISO))}>
             {t("回到今天", "Back to today")}
           </button>
         </div>
@@ -278,7 +287,7 @@ export default function StatsView() {
               const myLogs = habitLogs.filter((l) => l.habit_id === h.id);
               const logMap = new Map<string, number>();
               for (const l of myLogs) logMap.set(l.date, l.value);
-              const streak = computeStreak(h, logMap);
+              const streak = computeStreak(h, logMap, fromISODate(todayISO));
               const rate = completionRate(h, myLogs, cells.length);
               return (
                 <div key={h.id} className="habit-summary-row">

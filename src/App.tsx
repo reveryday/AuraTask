@@ -14,6 +14,7 @@ import HelpDialog from "./components/HelpDialog";
 import SettingsDialog from "./components/SettingsDialog";
 import { useFocusTimer } from "./hooks/useFocusTimer";
 import { useT } from "./i18n";
+import { useSettings } from "./settings";
 import {
   createTask,
   deleteTask,
@@ -33,6 +34,7 @@ import {
   startOfMonth,
   startOfWeek,
   toISODate,
+  fromISODate,
 } from "./utils/date";
 
 function rangeFor(view: ViewMode, anchor: Date): [string, string] {
@@ -66,11 +68,12 @@ function headerLabel(view: ViewMode, anchor: Date, lang: "zh" | "en" = "zh"): st
 
 export default function App() {
   const { t, lang } = useT();
+  const { todayISO } = useSettings();
   const [view, setView] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("auratask.lastCalendarView");
     return saved === "week" || saved === "month" ? (saved as ViewMode) : "day";
   });
-  const [anchor, setAnchor] = useState(new Date());
+  const [anchor, setAnchor] = useState(() => fromISODate(todayISO));
   const [tasks, setTasks] = useState<Task[]>([]);
   const [moods, setMoods] = useState<Record<string, string>>({});
   const [showAdd, setShowAdd] = useState(false);
@@ -97,7 +100,7 @@ export default function App() {
   const [todayCounts, setTodayCounts] = useState({ pending: 0, done: 0 });
 
   const refreshTodayCounts = useCallback(async () => {
-    const today = toISODate(new Date());
+    const today = todayISO;
     try {
       const rows = await listTasksInRange(today, today);
       setTodayCounts({
@@ -107,7 +110,7 @@ export default function App() {
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [todayISO]);
 
   useEffect(() => {
     refreshTodayCounts();
@@ -199,7 +202,7 @@ export default function App() {
 
   // Once-per-session daily summary on startup
   useEffect(() => {
-    const today = toISODate(new Date());
+    const today = todayISO;
     const stamp = sessionStorage.getItem("auratask.dailyNotifiedFor");
     if (stamp === today) return;
     sessionStorage.setItem("auratask.dailyNotifiedFor", today);
@@ -412,7 +415,10 @@ export default function App() {
                   />
                 </svg>
               </button>
-              <button className="today-btn" onClick={() => setAnchor(new Date())}>
+              <button
+                className="today-btn"
+                onClick={() => setAnchor(fromISODate(todayISO))}
+              >
                 {t("今天", "Today")}
               </button>
 
@@ -444,7 +450,7 @@ export default function App() {
               todayDone={todayCounts.done}
               timer={timer}
               onJumpDay={() => {
-                setAnchor(new Date());
+                setAnchor(fromISODate(todayISO));
                 setView("day");
               }}
               onJumpFocus={() => setView("focus")}
@@ -514,7 +520,7 @@ export default function App() {
       )}
       {editingTask && (
         <TaskDialog
-          defaultDate={editingTask.due_date ?? toISODate(new Date())}
+          defaultDate={editingTask.due_date ?? todayISO}
           existing={editingTask}
           onCancel={() => setEditingTask(null)}
           onSubmit={onSaveEdit}

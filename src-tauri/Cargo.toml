@@ -1,6 +1,6 @@
 [package]
 name = "auratask"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -27,4 +27,3 @@ tauri-plugin-window-state = "2.4.1"
 tauri-plugin-notification = "2.3.3"
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-fs = "2.5.1"
-
