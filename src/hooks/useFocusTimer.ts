@@ -66,10 +66,13 @@ export function useFocusTimer(): FocusTimer {
   const totalSec = kind === "focus" ? settings.focusMin * 60 : settings.breakMin * 60;
   const [remaining, setRemaining] = useState(totalSec);
 
+  // Keep the displayed time in sync when the duration changes (settings edit or
+  // kind switch) while idle. Intentionally NOT triggered by `running` — doing so
+  // would reset the countdown on pause. reset()/switchKind()/finishSession()
+  // each set `remaining` themselves.
   useEffect(() => {
-    if (running) return;
-    setRemaining(totalSec);
-  }, [totalSec, running]);
+    if (!running) setRemaining(totalSec);
+  }, [totalSec]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const finishSession = useCallback(async () => {
     const started = startedRef.current ?? new Date().toISOString();
